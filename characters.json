@@ -1,0 +1,66 @@
+{
+  "_comentario": "Personagem apresentador de cada planeta. Para trocar um personagem, ponha o .glb em Models/characters/ e altere 'model' (e os créditos). 'model': null deixa o planeta sem apresentador. Ver CHARACTERS.md.",
+  "defaults": {
+    "height_factor": 1.4,
+    "side_offset": 2.1
+  },
+  "planets": {
+    "mercury": {
+      "character": "Ely",
+      "model": "Models/characters/ely.glb",
+      "tagline": "O mensageiro mais rápido: uma volta ao Sol em 88 dias.",
+      "source": "Mixamo (Adobe) — 'Ely by K.Atienza'; FBX original: Models/character (2).fbx",
+      "license": "Termos de utilização Mixamo/Adobe"
+    },
+    "venus": {
+      "character": "Vanguard",
+      "model": "Models/characters/vanguard.glb",
+      "tagline": "Bem-vindo ao planeta mais quente: 464 °C à superfície.",
+      "source": "Mixamo (Adobe) — 'Vanguard By T. Choonyung'; FBX original: Models/character (1).fbx",
+      "license": "Termos de utilização Mixamo/Adobe"
+    },
+    "earth": {
+      "character": "Remy",
+      "model": "Models/characters/remy.glb",
+      "tagline": "A nossa casa — o único planeta conhecido com vida.",
+      "source": "Mixamo (Adobe) — 'Remy'; FBX original: Models/character.fbx",
+      "license": "Termos de utilização Mixamo/Adobe"
+    },
+    "mars": {
+      "character": "Maw",
+      "model": "Models/characters/maw.glb",
+      "tagline": "O planeta vermelho guarda o maior vulcão do sistema solar.",
+      "source": "Mixamo (Adobe) — 'Maw J Laygo'; FBX original: Models/character (3).fbx",
+      "license": "Termos de utilização Mixamo/Adobe"
+    },
+    "jupiter": {
+      "character": "Warrok",
+      "model": "Models/characters/warrok.glb",
+      "tagline": "O gigante: cabem aqui mais de 1300 Terras.",
+      "source": "Mixamo (Adobe) — 'Warrok W Kurniawan'; FBX original: Models/Warrok W Kurniawan.fbx",
+      "license": "Termos de utilização Mixamo/Adobe"
+    },
+    "saturn": {
+      "character": "Mutant",
+      "model": "Models/characters/mutant.glb",
+      "tagline": "Senhor dos anéis — feitos de gelo e rocha.",
+      "source": "Mixamo (Adobe) — 'Mutant'; FBX original: Models/Mutant.fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "side_offset": 2.9
+    },
+    "uranus": {
+      "character": "Goblin",
+      "model": "Models/characters/goblin.glb",
+      "tagline": "Rodo deitado: o meu eixo está inclinado 98°.",
+      "source": "Mixamo (Adobe) — 'Goblin D Shareyko'; FBX original: Models/goblin_d_shareyko.fbx",
+      "license": "Termos de utilização Mixamo/Adobe"
+    },
+    "neptune": {
+      "character": null,
+      "model": null,
+      "tagline": null,
+      "source": "Vaga — só existiam 7 personagens no projeto. Ver CHARACTERS.md para adicionar um.",
+      "license": null
+    }
+  }
+}

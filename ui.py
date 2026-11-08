@@ -72,6 +72,7 @@ class UIManager:
         self.shader = shader
 
         self.selected_body_data: Optional[dict] = None
+        self.presenter_data: Optional[dict] = None  # Personagem apresentador (characters.json)
         self.show_help: bool = False
         self.show_info_panel: bool = True
 
@@ -138,8 +139,13 @@ class UIManager:
     def set_selected_body(self, data: Optional[dict]) -> None:
         """Atualiza os dados astronómicos do corpo celeste selecionado."""
         self.selected_body_data = data
+        self.presenter_data = None  # o main.py define o apresentador logo a seguir (set_presenter)
         if data is not None:
             self.show_info_panel = True
+
+    def set_presenter(self, presenter: Optional[dict]) -> None:
+        """Define o personagem apresentador do corpo selecionado (entrada de characters.json)."""
+        self.presenter_data = presenter
 
     def toggle_help(self) -> None:
         """Alterna a visualização da tela de ajuda (Tecla F1)."""
@@ -372,8 +378,9 @@ class UIManager:
         if not data:
             return
 
+        presenter = self.presenter_data
         x0, y0 = self.panel_x, self.panel_y
-        x1, y1 = x0 + self.panel_width, y0 + self.panel_height
+        x1, y1 = x0 + self.panel_width, y0 + self.panel_height + (66 if presenter else 0)
 
         # Caixa de fundo com cantos arredondados e transparência moderna
         draw.rounded_rectangle([x0, y0, x1, y1], radius=12, fill=(10, 14, 25, 230), outline=(50, 80, 150, 255), width=2)
@@ -411,6 +418,27 @@ class UIManager:
         draw.text((x0 + 20, curr_y + 12), "Composição Atmosférica:", fill=(150, 175, 215), font=self.font_small)
         atmos = str(data.get("atmosphere", "N/A"))
         draw.text((x0 + 20, curr_y + 28), atmos, fill=(120, 220, 180), font=self.font_small)
+
+        # Personagem apresentador do planeta (characters.py / characters.json)
+        if presenter:
+            py = curr_y + 50
+            draw.line([(x0 + 20, py), (x1 - 20, py)], fill=(40, 65, 110), width=1)
+            draw.text((x0 + 20, py + 8), "Apresentador:", fill=(150, 175, 215), font=self.font_small)
+            draw.text((x0 + 110, py + 6), str(presenter.get("character", "")), fill=(255, 210, 120), font=self.font_text)
+            tagline = str(presenter.get("tagline") or "")
+            # Quebra simples da frase em linhas que cabem no painel
+            lines, line = [], ""
+            for word in tagline.split():
+                trial = f"{line} {word}".strip()
+                if draw.textlength(trial, font=self.font_small) > self.panel_width - 40 and line:
+                    lines.append(line)
+                    line = word
+                else:
+                    line = trial
+            if line:
+                lines.append(line)
+            for i, ln in enumerate(lines[:3]):
+                draw.text((x0 + 20, py + 28 + i * 14), ln, fill=(225, 225, 235), font=self.font_small)
 
         # Dica de fecho
         draw.text((x0 + 20, y1 - 25), "Dica: Clique noutro planeta ou prima [I] para fechar", fill=(100, 120, 150), font=self.font_small)
