@@ -63,5 +63,6 @@ void main()
     // 7. Composição final da cor (Lado Dia + Lado Noite dinâmico)
     vec3 result = ambient + diffuse + specular;
 
-    FragColor = vec4(result, texColor.a);
+    // Os corpos planetários são esferas celestes maciças e 100% opacas
+    FragColor = vec4(result, 1.0);
 }
