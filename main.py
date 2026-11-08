@@ -411,7 +411,7 @@ class SolarSimulatorApp:
             mouse_x, mouse_y, self.width, self.height, view, proj
         )
         # Clique no personagem apresentador: conta o facto seguinte
-        if self.planet_characters and self.planet_characters.hit_test(ray_origin, ray_dir):
+        if self.planet_characters and self.planet_characters.hit_test_screen(mouse_x, mouse_y, self.width, self.height):
             self.presentation.next_fact(self.selected_body_id)
             return
         closest_body_id = None
@@ -1082,23 +1082,17 @@ class SolarSimulatorApp:
                 ring_shader=self.ring_shader,
             )
 
-            # 7b. Personagem apresentador do planeta selecionado (characters.json)
-            #     As falas e gestos avançam mesmo com a simulação em pausa.
+            # 7b. Apresentador que está a falar (retrato no canto superior direito;
+            #     desenhado no passo 12b). As falas e gestos avançam mesmo em pausa.
+            #     Com o Guia Virtual aberto ("Saber Mais"), o retrato esconde-se.
             if self.presentation:
                 self.presentation.update(delta_time)
-            if self.planet_characters:
+            if self.planet_characters and self.presentation:
+                speaker = None if self.guide_active else self.presentation.portrait_speaker()
                 self.planet_characters.update(
-                    delta_time, self.selected_body_id,
-                    self.presentation.gestures_for(self.selected_body_id) if self.presentation else (0, 0, 0),
-                )
-                self.planet_characters.draw(
-                    self.celestial_shader,
-                    view_matrix,
-                    projection_matrix,
-                    self.camera,
-                    # Com o Guia Virtual aberto ("Saber Mais"), o apresentador esconde-se
-                    None if self.guide_active else self.solar_system.bodies.get(self.selected_body_id or ""),
-                    current_time,
+                    delta_time, speaker,
+                    self.presentation.gestures_for(speaker),
+                    self.presentation.mouth(speaker),
                 )
 
             # 8. Cintura de Asteroides
@@ -1151,6 +1145,10 @@ class SolarSimulatorApp:
                     axial_tilt_deg=target_body.data.get("axial_tilt_deg", 0.0),
                 )
 
+            # 12b. Retrato do apresentador que está a falar (viewport próprio)
+            if self.planet_characters:
+                self.planet_characters.draw_portrait(self.celestial_shader, self.width, self.height, current_time)
+
             # 13. Interface 2D — HUD + Painel de Informações + Legendas Pedagógicas
             if self.ui_manager:
                 self.ui_manager.draw(
@@ -1180,6 +1178,7 @@ class SolarSimulatorApp:
                     },
                     speech=self._speech_for_ui(view_matrix, projection_matrix),
                     presentation_status=self.presentation.status() if self.presentation else None,
+                    portrait=self._portrait_for_ui(),
                 )
 
             # 14. Apresentação do frame (Double Buffering)
@@ -1188,23 +1187,37 @@ class SolarSimulatorApp:
 
         self._cleanup()
 
+    def _portrait_for_ui(self) -> Optional[dict]:
+        """Moldura e nome do retrato do apresentador (desenhados pela UI)."""
+        pc = self.planet_characters
+        rect = pc.portrait_rect(self.width, self.height) if pc else None
+        return {"rect": rect, "name": pc.portrait_name()} if rect else None
+
     def _speech_for_ui(self, view: glm.mat4, proj: glm.mat4) -> Optional[dict]:
-        """Balão de fala atual com a posição no ecrã: cabeça do personagem, topo do
-        planeta (se não tiver personagem) ou None (narradora → balão no topo)."""
+        """Balão de fala atual e onde o pôr:
+          - "portrait": ao lado do retrato do personagem que está a falar;
+          - "screen": por cima do planeta (planeta sem personagem, ex.: Neptuno);
+          - nenhum dos dois: narradora (balão em baixo, ao centro)."""
         if not self.presentation:
             return None
         speech = self.presentation.bubble()
         if not speech:
             return None
-        anchor_world = None
-        speaker = speech["speaker"]
-        if speaker == self.selected_body_id:
-            if self.planet_characters and self.planet_characters.anchor_world is not None:
-                anchor_world = self.planet_characters.anchor_world
-            elif speaker in self.solar_system.bodies:
-                body = self.solar_system.bodies[speaker]
-                anchor_world = body.current_position + glm.vec3(0.0, body.visual_radius * 1.1, 0.0)
         speech["screen"] = None
+        speech["portrait"] = None
+        speaker = speech["speaker"]
+        pc = self.planet_characters
+        if pc and pc.info_for(speaker):
+            if speaker != pc._shown_id:
+                return None   # o retrato do personagem anterior ainda está a sair
+            speech["portrait"] = pc.portrait_rect(self.width, self.height)
+            if speech["portrait"] is None:
+                return None   # o retrato ainda está a entrar
+            return speech
+        anchor_world = None
+        if speaker == self.selected_body_id and speaker in self.solar_system.bodies:
+            body = self.solar_system.bodies[speaker]
+            anchor_world = body.current_position + glm.vec3(0.0, body.visual_radius * 1.1, 0.0)
         if anchor_world is not None:
             clip = proj * view * glm.vec4(anchor_world, 1.0)
             if clip.w > 0.0:

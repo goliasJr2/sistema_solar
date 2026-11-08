@@ -5,8 +5,11 @@ selecionado. Ao aparecer, o personagem **acena** com o braço direito; depois fi
 **repouso**, com respiração, cabeça a olhar à volta e um leve balanço do corpo. O nome
 e uma frase sobre o planeta aparecem no painel de informação (tecla **I**).
 
-> As falas, a voz, os gestos de apontar e falar, a visita guiada e o quiz estão descritos
-> em [APRESENTACAO.md](APRESENTACAO.md).
+> **Atualização:** o personagem já não aparece de corpo inteiro ao lado do planeta. Quando
+> fala, aparece como **retrato** (cabeça e ombros) no canto superior direito, ao lado do
+> balão de fala. As falas, a voz, o retrato, a visita guiada e o quiz estão descritos em
+> [APRESENTACAO.md](APRESENTACAO.md). O que está abaixo sobre a conversão, o esqueleto
+> e a animação continua válido.
 
 ---
 

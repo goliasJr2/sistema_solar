@@ -22,6 +22,7 @@ duração é estimada pelo tamanho do texto.
 """
 
 import json
+import math
 import random
 import time
 from dataclasses import dataclass
@@ -68,6 +69,7 @@ class Presentation:
         self.quiz: Optional[dict] = None   # estado do quiz (ver _quiz_*)
         self.quiz_result_timer = 0.0
         self._clock: Optional[float] = None
+        self.envelope = None   # curva de intensidade da fala atual (audio.voice_envelope)
 
     # ================================================================ textos
     def speaker_name(self, speaker: str) -> str:
@@ -277,6 +279,29 @@ class Presentation:
         self.elapsed = 0.0
         dur = self.audio.play_voice(line.key, line.text)
         self.duration = dur if dur else max(1.6, len(line.text) / CHARS_PER_SECOND)
+        self.envelope = self.audio.voice_envelope(line.key, line.text) if dur else None
+
+    def mouth(self, pid: Optional[str]) -> float:
+        """Abertura da boca (0–1) do personagem `pid` neste instante, ao ritmo da voz.
+        Sem áudio, simula um padrão de fala a partir do tempo."""
+        line = self.current
+        if line is None or line.speaker != pid:
+            return 0.0
+        env = getattr(self, "envelope", None)
+        if env is not None and len(env):
+            i = int(self.elapsed * self.audio.ENVELOPE_RATE)
+            return float(env[i]) if i < len(env) else 0.0
+        if self.elapsed > self.duration * 0.95:
+            return 0.0
+        return 0.5 + 0.5 * math.sin(self.elapsed * 13.0) * math.sin(self.elapsed * 3.1)
+
+    def portrait_speaker(self) -> Optional[str]:
+        """Planeta cujo apresentador deve aparecer no retrato (quem está a falar,
+        ou acabou de falar e o balão ainda está visível). None para a narradora."""
+        b = self.bubble()
+        if b and b["speaker"] != NARRATOR and self.planets.get(b["speaker"], {}).get("model"):
+            return b["speaker"]
+        return None
 
     def update(self, delta_time: float) -> None:
         # As falas seguem o relógio real (como o áudio), e não o delta_time do ciclo

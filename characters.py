@@ -1,9 +1,9 @@
 """
 ===============================================================================
 Módulo: characters.py
-Descrição: Personagens 3D "apresentadores" — cada planeta tem o seu personagem,
-           que aparece ao lado do planeta quando este é focado
-           (teclas 1–8, TAB ou clique com o rato).
+Descrição: Personagens 3D "apresentadores" — cada planeta tem o seu personagem.
+           Enquanto fala, a cabeça (e os ombros) do personagem aparece num
+           RETRATO no canto superior direito do ecrã, ao lado do balão de fala.
 Conceitos aplicados:
   - Configuração orientada por dados (characters.json): trocar um personagem
     não exige alterar código.
@@ -15,12 +15,13 @@ Conceitos aplicados:
       * .glb: personagem ESTÁTICO (carregado pelo GLBModel existente).
   - Carregamento preguiçoso (lazy loading) com cache: cada modelo só é
     lido e enviado para a GPU na primeira vez que o seu planeta é focado.
-  - Posicionamento relativo à câmara: o personagem fica à direita do planeta
-    no plano da câmara (vetor camera.right), à escala do raio visual do planeta.
-  - Rotação em Y para ficar virado para a câmara, mais flutuação suave.
-  - Animação de entrada (escala 0 -> 1 com easing) e aceno ao trocar de planeta.
-  - Iluminação "de estúdio": luz posicionada junto à câmara para o personagem
-    estar sempre visível, mesmo quando o planeta está no lado noturno.
+  - Retrato com viewport próprio: o personagem é desenhado numa região do ecrã
+    (glViewport + glScissor) com uma câmara e projeção só suas, enquadrando a
+    cabeça a partir das posições dos ossos "Head" e "HeadTop_End".
+  - Boca e cabeça ao ritmo da voz: a intensidade do áudio (audio.voice_envelope)
+    abre o maxilar (osso "Jaw", quando existe) e acentua os acenos da cabeça.
+  - Animação de entrada/saída: o retrato desliza a partir da direita.
+  - Iluminação "de estúdio" própria do retrato.
 ===============================================================================
 """
 
@@ -35,7 +36,8 @@ import glm
 import numpy as np
 from PIL import Image
 from OpenGL.GL import (
-    glDisable, glEnable, GL_CULL_FACE,
+    glDisable, glEnable, GL_CULL_FACE, glViewport, glScissor, glClear, glClearColor,
+    GL_SCISSOR_TEST, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT,
     glGenVertexArrays, glBindVertexArray, glGenBuffers, glBindBuffer, glBufferData,
     glVertexAttribPointer, glEnableVertexAttribArray, glDrawElements,
     glDeleteVertexArrays, glDeleteBuffers, glGetIntegerv, glUniformMatrix4fv,
@@ -107,9 +109,17 @@ class SkinnedCharacterModel:
             glBindVertexArray(0)
             self._parts.append((vao, vbo, ebo, len(faces), _upload_texture(img)))
 
+    def head_frame(self):
+        """(centro, tamanho) da cabeça na pose de ligação, no espaço do modelo."""
+        idx = self.rig.idx
+        head = self.rig.G[idx["Head"]][:3, 3] if "Head" in idx else np.array([0.0, 0.8, 0.0])
+        top = self.rig.G[idx["HeadTop_End"]][:3, 3] if "HeadTop_End" in idx else head + [0.0, 0.25, 0.0]
+        size = float(max(np.linalg.norm(top - head), 0.08))
+        return head + (top - head) * 0.35, size
+
     def draw(self, shader: Shader, t: float, wave: float, point: float = 0.0,
-             point_dir=None, talk: float = 0.0) -> None:
-        palette = self.rig.palette(t, wave, point, point_dir, talk)
+             point_dir=None, talk: float = 0.0, mouth: float = 0.0) -> None:
+        palette = self.rig.palette(t, wave, point, point_dir, talk, mouth)
         loc = shader.get_uniform_location("uBones")
         if loc != -1:
             glUniformMatrix4fv(loc, len(palette), GL_FALSE, np.ascontiguousarray(palette.transpose(0, 2, 1)))
@@ -129,26 +139,31 @@ class SkinnedCharacterModel:
 
 
 class PlanetCharacters:
-    """Gere e desenha o personagem apresentador do planeta selecionado.
-    Os gestos (aceno, apontar, falar) são decididos pelo presentation.py."""
+    """Gere e desenha o retrato do personagem que está a falar.
+    Quem fala, os gestos e a boca são decididos pelo presentation.py."""
 
-    APPEAR_SECONDS = 0.6     # Duração da animação de entrada
+    SLIDE_SECONDS = 0.35     # Duração da entrada/saída do retrato
     GESTURE_RATE = 5.0       # Velocidade das transições entre gestos (1/s)
+    MARGIN = 18              # Distância do retrato às margens do ecrã (px)
+    TOP = 62                 # Abaixo da barra superior (px)
+    BG_COLOR = (0.05, 0.08, 0.16)
+    SCENE_CLEAR = (0.01, 0.01, 0.02)   # cor de fundo da cena (main.py)
+    # Direção "para o planeta" no espaço do personagem: o retrato está no canto
+    # superior direito, por isso o planeta fica à esquerda (direita do personagem) e
+    # abaixo. Ângulo moderado (~24°) para a cara continuar virada para quem vê.
+    POINT_DIR = (-0.45, -0.3, 1.0)
 
     def __init__(self, base_dir: Path, shaders_dir: Optional[Path] = None,
                  config_file: str = "characters.json"):
         self.base_dir = Path(base_dir)
         self.config: Dict[str, dict] = {}
-        self.defaults = {"height_factor": 1.4, "side_offset": 2.1}
+        self.defaults = {}
         self._models: Dict[str, Optional[Union[GLBModel, SkinnedCharacterModel]]] = {}
-        self._active_id: Optional[str] = None
-        self._since = 0.0      # segundos desde que o planeta atual foi selecionado
-        self._gestures = [0.0, 0.0, 0.0]   # aceno, apontar, falar (suavizados)
+        self._shown_id: Optional[str] = None   # personagem no retrato (fica durante a saída)
+        self._slide = 0.0                      # 0 = escondido, 1 = visível
+        self._gestures = [0.0, 0.0, 0.0]       # aceno, apontar, falar (suavizados)
+        self._mouth = 0.0
         self.skinned_shader: Optional[Shader] = None
-        # Atualizados a cada desenho: ponto acima da cabeça (balão) e esfera de clique
-        self.anchor_world: Optional[glm.vec3] = None
-        self.hit_center: Optional[glm.vec3] = None
-        self.hit_radius = 0.0
         self._load_config(self.base_dir / config_file)
 
         shaders_dir = Path(shaders_dir) if shaders_dir else self.base_dir / "shaders"
@@ -199,117 +214,107 @@ class PlanetCharacters:
         return self._models[rel_path]
 
     # ------------------------------------------------------------------ ciclo
-    def update(self, delta_time: float, selected_id: Optional[str],
-               gestures=(0.0, 0.0, 0.0)) -> None:
-        """Reinicia a entrada ao mudar de planeta e aproxima suavemente os gestos
-        (aceno, apontar, falar) dos valores pedidos pelo presentation.py."""
-        if selected_id != self._active_id:
-            self._active_id = selected_id
-            self._since = 0.0
-            self._gestures = [0.0, 0.0, 0.0]
-        else:
-            self._since += delta_time
+    def update(self, delta_time: float, speaker_id: Optional[str],
+               gestures=(0.0, 0.0, 0.0), mouth: float = 0.0) -> None:
+        """`speaker_id`: planeta cujo apresentador está a falar (None = ninguém).
+        O retrato entra/sai a deslizar e os gestos mudam suavemente."""
+        if speaker_id is not None and self.info_for(speaker_id) is None:
+            speaker_id = None
+        if speaker_id is not None and speaker_id != self._shown_id:
+            if self._slide > 0.05 and self._shown_id is not None:
+                speaker_id = None          # primeiro sai o personagem anterior
+            else:
+                self._shown_id = speaker_id
+                self._gestures = [0.0, 0.0, 0.0]
+        target = 1.0 if speaker_id is not None else 0.0
+        step = delta_time / self.SLIDE_SECONDS
+        self._slide = min(target, self._slide + step) if target > self._slide else max(target, self._slide - step)
         k = min(1.0, delta_time * self.GESTURE_RATE)
-        for i, target in enumerate(gestures):
-            self._gestures[i] += (float(target) - self._gestures[i]) * k
+        for i, g in enumerate(gestures):
+            self._gestures[i] += (float(g) - self._gestures[i]) * k
+        self._mouth += (float(mouth) - self._mouth) * min(1.0, delta_time * 18.0)
 
-    def hit_test(self, ray_origin: glm.vec3, ray_dir: glm.vec3) -> bool:
-        """O raio do rato atinge o personagem visível? (esfera envolvente)"""
-        if self.hit_center is None:
-            return False
-        oc = ray_origin - self.hit_center
-        b = glm.dot(oc, ray_dir)
-        c = glm.dot(oc, oc) - self.hit_radius * self.hit_radius
-        return b * b - c >= 0.0 and (-b + (b * b - c) ** 0.5) > 0.0
+    def portrait_rect(self, screen_w: int, screen_h: int):
+        """Retângulo do retrato no ecrã (x, y, largura, altura; origem no canto superior
+        esquerdo), ou None se estiver escondido."""
+        if self._slide <= 0.0 or self._shown_id is None:
+            return None
+        size = int(max(160, min(300, screen_h * 0.38)))
+        ease = 1.0 - (1.0 - self._slide) ** 3
+        x = int(screen_w - (self.MARGIN + size) * ease)
+        return x, self.TOP, size, size
 
-    def draw(
-        self,
-        shader: Shader,
-        view: glm.mat4,
-        proj: glm.mat4,
-        camera,
-        body,
-        current_time: float,
-    ) -> None:
-        """Desenha o personagem do planeta `body` (objeto CelestialBody selecionado).
-        `shader` é o celestial (para modelos .glb estáticos)."""
-        self.anchor_world = self.hit_center = None
-        if body is None:
-            return
-        entry = self.info_for(self._active_id)
-        if entry is None:
+    def portrait_name(self) -> Optional[str]:
+        entry = self.info_for(self._shown_id)
+        return entry.get("character") if entry else None
+
+    def hit_test_screen(self, x: float, y: float, screen_w: int, screen_h: int) -> bool:
+        """O clique (coordenadas de ecrã) foi dentro do retrato?"""
+        r = self.portrait_rect(screen_w, screen_h)
+        return r is not None and r[0] <= x <= r[0] + r[2] and r[1] <= y <= r[1] + r[3]
+
+    def draw_portrait(self, shader: Shader, screen_w: int, screen_h: int, current_time: float) -> None:
+        """Desenha a cabeça do personagem no retrato (viewport próprio no canto superior
+        direito). `shader` é o celestial (para modelos .glb estáticos)."""
+        rect = self.portrait_rect(screen_w, screen_h)
+        entry = self.info_for(self._shown_id)
+        if rect is None or entry is None:
             return
         model = self._get_model(entry["model"])
         if model is None:
             return
         animated = isinstance(model, SkinnedCharacterModel)
 
-        radius = float(body.visual_radius)
-        height = radius * float(entry.get("height_factor", self.defaults["height_factor"]))
-        side = radius * float(entry.get("side_offset", self.defaults["side_offset"]))
+        # Enquadramento da cabeça (no espaço do modelo, de frente para +Z)
+        if animated:
+            center, size = model.head_frame()
+            center = glm.vec3(*center)
+        else:
+            ext = model.normalized_extents
+            size = float(ext[1]) * 0.12
+            center = glm.vec3(0.0, float(ext[1]) * 0.5 - size * 0.9, 0.0)
+        target = center + glm.vec3(0.0, -size * 0.35, 0.0)
+        eye = target + glm.vec3(0.0, size * 0.25, size * 5.2)
 
-        # Animação de entrada com easing (ease-out-back: cresce e assenta)
-        t = min(1.0, self._since / self.APPEAR_SECONDS)
-        c = 1.70158
-        appear = 1.0 + (c + 1.0) * (t - 1.0) ** 3 + c * (t - 1.0) ** 2 if t > 0.0 else 0.0
-        if appear <= 0.001:
-            return
+        x, y, w, h = rect
+        gl_y = screen_h - y - h   # o OpenGL conta y a partir de baixo
+        glEnable(GL_SCISSOR_TEST)
+        glScissor(x, gl_y, w, h)
+        glViewport(x, gl_y, w, h)
+        glClearColor(*self.BG_COLOR, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        # Posição: à direita do planeta no plano da câmara, a flutuar ligeiramente
-        bob = math.sin(current_time * 1.6) * radius * 0.06
-        pos = glm.vec3(body.current_position) + camera.right * side + camera.up * bob
-
-        # Rotação em Y para ficar de frente para a câmara. Os personagens animados já
-        # mexem o corpo sozinhos; os estáticos ganham um balanço suave.
-        to_cam = camera.position - pos
-        yaw = math.atan2(to_cam.x, to_cam.z)
-        if not animated:
-            yaw += math.sin(current_time * 0.9) * math.radians(12.0)
-
-        model_height = model.height if animated else float(model.normalized_extents[1])
-        scale = (height / max(model_height, 1e-6)) * appear
-
-        # Para o balão de fala e o clique (o modelo está centrado: cabeça a +altura/2)
-        self.anchor_world = pos + glm.vec3(0.0, height * 0.5 * appear, 0.0)
-        self.hit_center = glm.vec3(pos)
-        self.hit_radius = height * 0.45
-
-        # Direção do planeta no espaço do personagem (para apontar): desfaz a rotação yaw
-        to_planet = glm.vec3(body.current_position) - pos
-        c_y, s_y = math.cos(-yaw), math.sin(-yaw)
-        point_dir = (c_y * to_planet.x + s_y * to_planet.z, to_planet.y, -s_y * to_planet.x + c_y * to_planet.z)
-
-        m = glm.mat4(1.0)
-        m = glm.translate(m, pos)
-        m = glm.rotate(m, yaw, glm.vec3(0.0, 1.0, 0.0))
-        m = glm.scale(m, glm.vec3(scale))
-        normal_matrix = glm.mat3(glm.transpose(glm.inverse(m)))
-
-        # Luz "de estúdio": acima e atrás da câmara, para o personagem nunca ficar às escuras
-        light_pos = camera.position + camera.up * (radius * 4.0) + camera.right * (radius * 2.0)
+        m = glm.rotate(glm.mat4(1.0), math.radians(-12.0), glm.vec3(0.0, 1.0, 0.0))   # vista a 3/4
+        view = glm.lookAt(eye, target, glm.vec3(0.0, 1.0, 0.0))
+        proj = glm.perspective(glm.radians(30.0), w / max(h, 1), size * 0.5, size * 40.0)
+        light = eye + glm.vec3(-size * 6.0, size * 7.0, size * 3.0)
 
         prog = self.skinned_shader if animated else shader
         prog.use()
         prog.set_mat4("uModel", m)
         prog.set_mat4("uView", view)
         prog.set_mat4("uProjection", proj)
-        prog.set_mat3("uNormalMatrix", normal_matrix)
-        prog.set_vec3("uLightPos", light_pos)
+        prog.set_mat3("uNormalMatrix", glm.mat3(glm.transpose(glm.inverse(m))))
+        prog.set_vec3("uLightPos", light)
         prog.set_vec3("uLightColor", glm.vec3(1.0, 0.97, 0.92))
-        prog.set_vec3("uViewPos", camera.position)
-        prog.set_vec3("uAmbientColor", glm.vec3(0.38, 0.38, 0.42))
+        prog.set_vec3("uViewPos", eye)
+        prog.set_vec3("uAmbientColor", glm.vec3(0.42, 0.42, 0.48))
         prog.set_float("uShininess", 24.0)
         prog.set_float("uSpecularStrength", 0.25)
         prog.set_int("uTexture", 0)
 
-        # Algumas malhas (cabelo, roupa) têm faces viradas para os dois lados
-        glDisable(GL_CULL_FACE)
+        glDisable(GL_CULL_FACE)   # cabelo e roupa têm faces visíveis dos dois lados
         if animated:
             wave, point, talk = self._gestures
-            model.draw(prog, current_time, wave, point, point_dir, talk)
+            model.draw(prog, current_time, wave, point, self.POINT_DIR, talk, self._mouth)
         else:
             model.draw()
         glEnable(GL_CULL_FACE)
+
+        # Repõe o estado da cena principal
+        glDisable(GL_SCISSOR_TEST)
+        glViewport(0, 0, screen_w, screen_h)
+        glClearColor(*self.SCENE_CLEAR, 1.0)
 
     def cleanup(self) -> None:
         for m in self._models.values():

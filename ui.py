@@ -96,8 +96,8 @@ class UIManager:
             self.font_subtitle = ImageFont.truetype("arial.ttf", 15)
             self.font_text = ImageFont.truetype("arial.ttf", 13)
             self.font_small = ImageFont.truetype("arial.ttf", 11)
-            self.font_speech = ImageFont.truetype("arial.ttf", 15)
-            self.font_speech_name = ImageFont.truetype("arialbd.ttf", 13)
+            self.font_speech = ImageFont.truetype("arial.ttf", 20)
+            self.font_speech_name = ImageFont.truetype("arialbd.ttf", 16)
         except Exception:
             self.font_speech = ImageFont.load_default()
             self.font_speech_name = ImageFont.load_default()
@@ -183,6 +183,7 @@ class UIManager:
         active_modules: Optional[dict] = None,
         speech: Optional[dict] = None,
         presentation_status: Optional[dict] = None,
+        portrait: Optional[dict] = None,
     ) -> None:
         """Desenha a interface gráfica completa sobreposta na tela.
         `speech`: balão de fala ({name, text, typing, screen: (x, y) ou None}).
@@ -222,6 +223,8 @@ class UIManager:
             self._paste_layer(overlay, "presentation", key,
                               lambda d: self._draw_presentation_status(d, presentation_status))
             self._bottom_stack_top = self._layer_cache["presentation"][3]
+        if portrait:
+            self._draw_portrait_frame(overlay, portrait)
         if speech:
             self._draw_speech_bubble(overlay, draw, speech)
 
@@ -549,59 +552,90 @@ class UIManager:
             lines.append(line)
         return lines
 
-    BUBBLE_MAX_W = 340
-    BUBBLE_LINE_H = 19
+    BUBBLE_MAX_W = 540      # largura máxima do balão (px)
+    BUBBLE_LINE_H = 27      # altura de cada linha de texto (fonte de 20 px)
+    BUBBLE_PAD = 18
 
-    def _bubble_body(self, name: str, text: str, visible: int, narrator: bool) -> Image.Image:
+    def _bubble_body(self, name: str, text: str, visible: int, narrator: bool, max_w: int) -> Image.Image:
         """Corpo do balão (fundo + nome + texto), em cache. O tamanho vem do texto
         completo; o texto aparece palavra a palavra (efeito máquina de escrever)."""
         if visible < len(text):
             cut = text.rfind(" ", 0, visible)
             if cut > 0:   # mostra só palavras completas (na 1.ª palavra, letra a letra)
                 visible = cut
-        key = (name, text, visible, narrator)
+        key = (name, text, visible, narrator, max_w)
         cached = self._bubble_cache.get("body")
         if cached and cached[0] == key:
             return cached[1]
 
+        pad = self.BUBBLE_PAD
         layout = self._bubble_cache.get("layout")
-        if not layout or layout[0] != text:
+        if not layout or layout[0] != (text, max_w):
             tmp = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-            lines = self._wrap(tmp, text, self.font_speech, self.BUBBLE_MAX_W - 28) or [""]
-            w = min(self.BUBBLE_MAX_W, max(140, int(max(tmp.textlength(l, font=self.font_speech) for l in lines)) + 28))
-            layout = (text, lines, w)
+            lines = self._wrap(tmp, text, self.font_speech, max_w - 2 * pad) or [""]
+            w = min(max_w, max(180, int(max(tmp.textlength(l, font=self.font_speech) for l in lines)) + 2 * pad))
+            layout = ((text, max_w), lines, w)
             self._bubble_cache["layout"] = layout
         _, lines, w = layout
-        h = 34 + self.BUBBLE_LINE_H * len(lines) + 8
+        h = pad + 24 + self.BUBBLE_LINE_H * len(lines) + pad - 4
 
         if narrator:
-            fill, outline, name_col, text_col = (14, 22, 40, 235), (120, 190, 255, 255), (120, 200, 255), (235, 240, 250)
+            fill, outline, name_col, text_col = (14, 22, 40, 238), (120, 190, 255, 255), (120, 200, 255), (240, 244, 252)
         else:
-            fill, outline, name_col, text_col = (250, 248, 240, 240), (255, 200, 90, 255), (190, 110, 20), (25, 28, 40)
+            fill, outline, name_col, text_col = (250, 248, 240, 245), (255, 200, 90, 255), (190, 110, 20), (25, 28, 40)
         img = Image.new("RGBA", (w + 1, h + 1), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
-        d.rounded_rectangle([0, 0, w, h], radius=14, fill=fill, outline=outline, width=2)
-        d.text((14, 10), name, fill=name_col, font=self.font_speech_name)
+        d.rounded_rectangle([0, 0, w, h], radius=16, fill=fill, outline=outline, width=3)
+        d.text((pad, pad - 4), name, fill=name_col, font=self.font_speech_name)
         remaining = visible
         for i, l in enumerate(lines):
             if remaining <= 0:
                 break
             shown = l[:remaining]
             remaining -= len(l) + 1
-            d.text((14, 30 + i * self.BUBBLE_LINE_H), shown + (" ▌" if remaining < 0 and visible < len(text) else ""),
+            d.text((pad, pad + 22 + i * self.BUBBLE_LINE_H), shown + (" ▌" if remaining < 0 and visible < len(text) else ""),
                    fill=text_col, font=self.font_speech)
         self._bubble_cache["body"] = (key, img, fill, outline)
         return img
 
+    def _draw_portrait_frame(self, overlay: Image.Image, portrait: dict) -> None:
+        """Moldura dourada e placa com o nome à volta do retrato do apresentador
+        (o retrato 3D é desenhado antes, pelo characters.py, num viewport próprio)."""
+        x, y, w, h = portrait["rect"]
+        name = portrait.get("name") or ""
+
+        def paint(d: ImageDraw.ImageDraw) -> None:
+            d.rounded_rectangle([x - 3, y - 3, x + w + 3, y + h + 3], radius=14, outline=(255, 200, 90, 255), width=4)
+            tw = int(d.textlength(name, font=self.font_speech_name))
+            px0 = x + (w - tw) // 2 - 14
+            d.rounded_rectangle([px0, y + h - 16, px0 + tw + 28, y + h + 16], radius=10,
+                                fill=(30, 22, 10, 240), outline=(255, 200, 90, 255), width=2)
+            d.text((px0 + 14, y + h - 10), name, fill=(255, 215, 120), font=self.font_speech_name)
+
+        self._paste_layer(overlay, "portrait_frame", (x, y, w, h, name, self.width, self.height), paint)
+
     def _draw_speech_bubble(self, overlay: Image.Image, draw: ImageDraw.ImageDraw, speech: dict) -> None:
-        """Balão de fala junto à cabeça do personagem (ou em baixo, para a narradora)."""
+        """Balão de fala: ao lado do retrato do personagem, por cima do planeta (planeta
+        sem personagem) ou em baixo ao centro (narradora)."""
+        portrait = speech.get("portrait")
         anchor = speech.get("screen")
         text = speech.get("text", "")
-        body = self._bubble_body(speech.get("name", ""), text, int(speech.get("visible", len(text))), anchor is None)
+        narrator = portrait is None and anchor is None
+
+        if portrait is not None:
+            px, py, pw, ph = portrait
+            left_limit = (self.panel_x + self.panel_width + 16) if (self.show_info_panel and self.selected_body_data) else 16
+            max_w = int(max(300, min(self.BUBBLE_MAX_W, px - 22 - left_limit)))
+        else:
+            max_w = self.BUBBLE_MAX_W
+        body = self._bubble_body(speech.get("name", ""), text, int(speech.get("visible", len(text))), narrator, max_w)
         _, _, fill, outline = self._bubble_cache["body"]
         w, h = body.width - 1, body.height - 1
 
-        if anchor is not None:
+        if portrait is not None:
+            x0 = int(px - 22 - w)
+            y0 = int(py + 10)
+        elif anchor is not None:
             ax, ay = anchor
             x0 = int(min(max(ax - w * 0.3, 10), self.width - w - 10))
             y0 = int(max(self.hud_height + 50, ay - h - 26))
@@ -611,8 +645,15 @@ class UIManager:
             y0 = int(getattr(self, "_bottom_stack_top", self.height - 12) - h - 10)
         overlay.alpha_composite(body, (x0, y0))
 
-        if anchor is not None:
-            # "Cauda" do balão a apontar para a cabeça do personagem (segue-o a cada frame)
+        if portrait is not None:
+            # "Cauda" do balão virada para a boca do personagem, no retrato à direita
+            x1 = x0 + w
+            ty = y0 + min(h - 26, 40)
+            tip = (int(px - 4), int(py + ph * 0.42))
+            draw.polygon([(x1 - 2, ty - 12), (x1 - 2, ty + 12), tip], fill=fill)
+            draw.line([(x1, ty - 12), tip, (x1, ty + 12)], fill=outline, width=3)
+        elif anchor is not None:
+            # "Cauda" do balão a apontar para o planeta
             x1, y1 = x0 + w, y0 + h
             tx = int(min(max(anchor[0], x0 + 24), x1 - 24))
             tip = (int(anchor[0]), int(min(anchor[1] - 6, y1 + 22)))

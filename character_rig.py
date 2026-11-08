@@ -104,6 +104,7 @@ class ProceduralRig:
             self.R[i] = u @ vt
 
         # Ossos pelo nome curto ("mixamorig:LeftArm" -> "LeftArm")
+        # (o maxilar "Jaw" só existe em alguns modelos, ex.: Warrok)
         self.idx: Dict[str, int] = {}
         for i, n in enumerate(self.names):
             self.idx.setdefault(n.split(":")[-1], i)
@@ -131,7 +132,7 @@ class ProceduralRig:
     # ------------------------------------------------------------------- pose
     def pose_rotations(self, t: float, wave: float, point: float = 0.0,
                        point_dir: Optional[Sequence[float]] = None,
-                       talk: float = 0.0) -> Dict[int, np.ndarray]:
+                       talk: float = 0.0, mouth: float = 0.0) -> Dict[int, np.ndarray]:
         """Rotações no mundo do personagem para cada osso animado, no instante t.
 
         wave      0–1: aceno com o braço direito.
@@ -139,6 +140,8 @@ class ProceduralRig:
                   (vetor no espaço do personagem, ex.: para o planeta); a cabeça
                   e o tronco viram-se nessa direção.
         talk      0–1: gestos de fala (acenos de cabeça, mão esquerda a gesticular).
+        mouth     0–1: intensidade da voz neste instante (curva do áudio): abre o
+                  maxilar (osso "Jaw", se existir) e acentua os movimentos da cabeça.
         """
         rots: Dict[int, np.ndarray] = {}
 
@@ -168,7 +171,10 @@ class ProceduralRig:
             @ rotation(FORWARD, math.radians(2.0) * math.sin(t * 0.55)))
 
         # Cabeça: olha à volta; acena ao falar; olha para o planeta ao apontar
-        nod = math.radians(5.0) * talk * math.sin(t * 6.5) * (0.6 + 0.4 * math.sin(t * 1.3))
+        mouth = max(0.0, min(1.0, mouth))
+        nod = (math.radians(5.0) * talk * math.sin(t * 6.5) * (0.6 + 0.4 * math.sin(t * 1.3))
+               - math.radians(4.0) * mouth)   # a cabeça sobe ligeiramente nas sílabas fortes
+        put("Jaw", rotation(SIDE, math.radians(16.0) * mouth))
         put("Neck", rotation(UP, math.radians(6.0) * math.sin(t * 0.45) * (1 - point) + 0.3 * look_yaw * point))
         put("Head", rotation(UP, math.radians(10.0) * math.sin(t * 0.45 + 0.6) * (1 - point) + 0.4 * look_yaw * point)
             @ rotation(SIDE, math.radians(4.0) * math.sin(t * 0.8) + nod)
@@ -218,9 +224,10 @@ class ProceduralRig:
         return rots
 
     def palette(self, t: float, wave: float = 0.0, point: float = 0.0,
-                point_dir: Optional[Sequence[float]] = None, talk: float = 0.0) -> np.ndarray:
+                point_dir: Optional[Sequence[float]] = None, talk: float = 0.0,
+                mouth: float = 0.0) -> np.ndarray:
         """Matrizes S_i = C_i · G_i⁻¹ (float32, (B, 4, 4)) prontas para o shader."""
-        rots = self.pose_rotations(t, wave, point, point_dir, talk)
+        rots = self.pose_rotations(t, wave, point, point_dir, talk, mouth)
         C = np.empty_like(self.G)
         for i in range(self.count):
             local = self.L[i]

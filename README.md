@@ -134,7 +134,7 @@ Ou com duplo clique em `run.bat` (Windows), que usa o `.venv` se existir e, caso
    - A tabela planeta → personagem está em `characters.json`: trocar um personagem não exige alterar código.
    - Detalhes completos (origem dos modelos, licença, como adicionar novos): [CHARACTERS.md](CHARACTERS.md).
 10. **Apresentação com Voz, Visita Guiada e Quiz**:
-   - Os apresentadores falam (voz + balão de fala com texto a aparecer ao ritmo da voz), apontam para o planeta ao contar factos e gesticulam enquanto falam. `[F]` ou clique no personagem: facto seguinte.
+   - O apresentador que fala aparece num retrato (cabeça e ombros) no canto superior direito, com um balão de fala em letra grande ao lado; a cabeça (e a boca do Warrok) mexe-se ao ritmo da voz. Cada planeta tem 6 factos detalhados. `[F]` ou clique no retrato: facto seguinte.
    - `[J]`: visita guiada por todos os planetas, com uma narradora, terminando num quiz (respostas com `[1] [2] [3]`). `[K]`: ligar/silenciar o som.
    - Vozes geradas com as vozes do Windows e efeitos/ambiente sintetizados por código; o grupo pode substituir as vozes por gravações próprias sem mexer no código.
    - Interface 2D com camadas em cache: o simulador passou de ~6 para ~22 FPS reais.

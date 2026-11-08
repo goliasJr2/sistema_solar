@@ -94,6 +94,31 @@ class AudioManager:
                 print("[Som] Há textos alterados sem voz atualizada — corra tools/gerar_vozes.py.")
         return None
 
+    ENVELOPE_RATE = 30   # amostras da curva de intensidade por segundo
+
+    def voice_envelope(self, key: str, text: str):
+        """Curva de intensidade da fala (0–1, 30 valores por segundo), usada para mexer
+        a boca/cabeça do personagem ao ritmo da voz. None se não houver áudio."""
+        snd = self.voice_sound(key, text)
+        if snd is None:
+            return None
+        cache_key = ("env", key)
+        if cache_key not in self._cache:
+            try:
+                import numpy as np
+                freq, _, channels = pygame.mixer.get_init()
+                samples = np.frombuffer(snd.get_raw(), dtype=np.int16).astype(np.float32)
+                samples = samples.reshape(-1, channels).mean(axis=1) if channels > 1 else samples
+                win = max(1, freq // self.ENVELOPE_RATE)
+                n = len(samples) // win
+                rms = np.sqrt((samples[: n * win].reshape(n, win) ** 2).mean(axis=1))
+                ref = np.percentile(rms, 95) if n else 1.0
+                env = np.clip(rms / (ref + 1e-6), 0.0, 1.0)
+                self._cache[cache_key] = env
+            except Exception:
+                self._cache[cache_key] = None
+        return self._cache[cache_key]
+
     # ------------------------------------------------------------------ tocar
     def play_voice(self, key: str, text: str) -> Optional[float]:
         """Toca a fala e devolve a sua duração em segundos (None se não houver áudio)."""

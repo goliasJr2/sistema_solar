@@ -1,9 +1,10 @@
 # Apresentação dos Planetas: falas, som, visita guiada e quiz
 
 Continuação dos [personagens apresentadores](CHARACTERS.md). Os personagens deixam de
-ser só decoração. Agora **falam** (voz + balão de fala), **apontam** para o planeta
-enquanto contam factos, e há uma **visita guiada** por todos os planetas que termina
-com um **quiz**.
+ser só decoração. Agora **falam**: o apresentador aparece num **retrato** (cabeça e
+ombros) no canto superior direito, com um balão de fala em letra grande ao lado. Cada
+planeta tem **6 factos detalhados**, e há uma **visita guiada** por todos os planetas
+que termina com um **quiz**.
 
 ---
 
@@ -11,8 +12,8 @@ com um **quiz**.
 
 | Tecla / ação | O que faz |
 |---|---|
-| **1–8**, **TAB** ou **clique** num planeta | O apresentador acena, diz quem é e conta um facto, a apontar para o planeta |
-| **F** ou **clique no personagem** | Conta o facto seguinte (cada planeta tem 3 factos, em ciclo) |
+| **1–8**, **TAB** ou **clique** num planeta | O retrato do apresentador entra no canto superior direito; ele acena, diz quem é e conta um facto |
+| **F** ou **clique no retrato** | Conta o facto seguinte (cada planeta tem 6 factos, em ciclo) |
 | **J** | Começa a **visita guiada**; **J** de novo termina-a |
 | **1 / 2 / 3** (durante o quiz) | Responde à pergunta (fora do quiz continuam a selecionar planetas) |
 | **K** | Liga / silencia todo o som |
@@ -23,27 +24,37 @@ Ao arrancar, a narradora dá as boas-vindas e explica as teclas 1–8 e J.
 ### Visita guiada (J)
 1. A narradora apresenta a visita.
 2. Para cada planeta, de Mercúrio a Neptuno: a câmara vai até ao planeta, o apresentador
-   cumprimenta (aceno), conta 2 factos (a apontar) e passa a palavra ao planeta seguinte
+   cumprimenta (aceno), conta 3 factos e passa a palavra ao planeta seguinte
    ("Agora vamos até Vénus!"). Em Neptuno, que não tem personagem, fala a narradora.
 3. **Quiz:** 3 perguntas sorteadas sobre os planetas, com as opções baralhadas.
    Responde-se com 1, 2 ou 3; a resposta certa fica a verde e a errada a vermelho.
 4. No fim aparece a pontuação ("Acertaste 2 de 3!").
 
 Escolher outro planeta à mão (teclas, TAB, clique) também termina a visita.
-A visita completa dura cerca de 3 a 4 minutos.
+A visita completa dura cerca de 5 a 6 minutos. Os restantes factos de cada planeta
+ouvem-se em modo livre, com **F**.
 
 ---
 
 ## O que se vê no ecrã
 
-- **Balão de fala** junto à cabeça do personagem, com o nome dele, e o texto a aparecer
-  palavra a palavra ao ritmo da voz. A "cauda" do balão segue o personagem.
-- **Balão da narradora** em baixo, ao centro, com outra cor (azul escuro).
+- **Retrato do apresentador** no canto superior direito: cabeça e ombros do personagem
+  3D, numa moldura dourada com o nome. Entra a deslizar quando ele começa a falar e sai
+  quando se cala. O planeta continua visível no centro, sem o corpo inteiro do personagem.
+- **Balão de fala** ao lado do retrato, com letra grande (20 px), o nome do personagem, e o
+  texto a aparecer palavra a palavra ao ritmo da voz. A "cauda" aponta para o retrato.
+- **Boca e cabeça ao ritmo da voz:** a intensidade do áudio de cada fala comanda os
+  movimentos da cabeça. O **Warrok** é o único com osso de maxilar no esqueleto, e abre e
+  fecha a boca a falar.
+- **Gestos:** aceno ao cumprimentar (a mão aparece no retrato); ao contar um facto, olha
+  na direção do planeta, em três quartos, sem virar a cara a quem vê; acenos de cabeça
+  enquanto fala. As transições entre gestos são suaves.
+- **Balão da narradora** em baixo, ao centro, com outra cor (azul escuro). Em Neptuno, que
+  não tem personagem, o balão aparece por cima do planeta.
 - **Faixa da visita/quiz** em baixo: "VISITA GUIADA · Marte (4/8) · [J] sair".
 - **Painel do quiz** com a pergunta e as 3 opções.
-- **Gestos:** aceno ao cumprimentar; braço estendido para o planeta (e cabeça/tronco
-  virados para ele) ao contar um facto; acenos de cabeça e a mão esquerda a gesticular
-  enquanto fala. As transições entre gestos são suaves.
+- Com o **Guia Virtual** aberto ("Saber Mais"), o retrato e as falas ficam em silêncio,
+  para não falarem por cima dele.
 
 ---
 
@@ -51,7 +62,7 @@ A visita completa dura cerca de 3 a 4 minutos.
 
 | Som | Origem | Ficheiros |
 |---|---|---|
-| **Vozes** (53 falas, ~5 min) | Síntese de voz do Windows, gerada uma vez por `tools/gerar_vozes.py` | `sounds/voices/*.wav` |
+| **Vozes** (77 falas, ~21 MB) | Síntese de voz do Windows, gerada uma vez por `tools/gerar_vozes.py` | `sounds/voices/*.wav` |
 | **Efeitos** (personagem a aparecer, balão, certo/errado) | Sintetizados por código (NumPy) em `tools/gerar_sons.py` | `sounds/sfx/*.wav` |
 | **Ambiente** (fundo espacial em ciclo de 24 s) | Sintetizado por código (NumPy) | `sounds/sfx/ambient.wav` |
 
@@ -105,9 +116,10 @@ estimada pelo tamanho do texto.
 | `tools/gerar_vozes.py` + `tools/tts_winrt.ps1` | **novo** | Geram as vozes a partir de `characters.json` (API WinRT do Windows) |
 | `tools/gerar_sons.py` | **novo** | Sintetiza os efeitos e o ambiente |
 | `sounds/` | **novo** | Vozes (~9 MB) e efeitos (~1 MB) gerados |
-| `characters.json` | alterado | Para cada planeta: `intro`, 3 `facts`, `handoff`, `quiz` e `voice`; secções `narrator` e `tour` |
-| `character_rig.py` | alterado | Novos gestos: **apontar** (braço na direção do planeta, cabeça e tronco viram-se) e **falar** (cabeça e mão esquerda) |
-| `characters.py` | alterado | Os gestos vêm do `presentation.py` (com transições suaves); calcula a direção do planeta no espaço do personagem, a posição da cabeça (para o balão) e uma esfera para o clique |
+| `characters.json` | alterado | Para cada planeta: `intro`, 6 `facts` detalhados, `handoff`, `quiz` e `voice`; secções `narrator` e `tour` |
+| `character_rig.py` | alterado | Novos gestos: **apontar** (cabeça e tronco viram-se para o planeta), **falar** (cabeça e mão esquerda) e **boca** (maxilar "Jaw", quando existe, ao ritmo da voz) |
+| `characters.py` | alterado | Desenha o **retrato** num viewport próprio (`glViewport` + `glScissor`) com câmara e luz só suas, enquadrando a cabeça a partir dos ossos "Head" e "HeadTop_End"; o retrato entra/sai a deslizar; clique no retrato = facto seguinte |
+| `audio.py` | alterado | `voice_envelope()`: curva de intensidade de cada fala (30 valores/s), usada para mexer a boca e a cabeça |
 | `ui.py` | alterado | Balão de fala, faixa da visita, painel do quiz; **camadas em cache** (ver abaixo) |
 | `main.py` | alterado | Teclas J, F, K e 1–3 no quiz; clique no personagem; projeção da cabeça do personagem para o ecrã; ligação de tudo |
 | `requirements.txt` | alterado | `pygame` → `pygame-ce` (o som passa a ser usado; o `pygame-ce` tem versões para Python 3.10–3.14) |
@@ -122,7 +134,8 @@ Agora as partes que mudam pouco (barra superior exceto o relógio, painel de inf
 faixa/quiz e o corpo do balão) são desenhadas **uma vez** numa camada em cache e só
 coladas nos frames seguintes; só são redesenhadas quando o conteúdo muda. O aspeto no
 ecrã é o mesmo. Resultado medido com a Terra selecionada: **6,3 → 22,6 FPS**, acima até
-dos ~12 FPS de antes destas alterações.
+dos ~12 FPS de antes destas alterações. Com o retrato (sem o corpo inteiro na cena), o
+FPS real medido com o apresentador a falar é **~34**.
 
 > Nota: o FPS mostrado na barra superior não é o real quando o simulador está lento,
 > porque o `main.py` limita o `delta_time` a 0,016 s quando um frame demora mais de
@@ -135,7 +148,9 @@ dos ~12 FPS de antes destas alterações.
 ## Testes feitos
 
 - Visita guiada completa simulada sem gráficos nem som: 8 planetas visitados por ordem,
-  40 falas, 3 perguntas, fim correto (~3,5 min).
+  48 falas, 3 perguntas, fim correto (~5,5 min).
+- Retrato: capturas do Remy, do Maw e do Warrok a falar (saudação e a meio de um facto);
+  a boca do Warrok acompanha a voz.
 - Simulador aberto com capturas: boas-vindas; saudação com aceno; facto a apontar para a
   Terra; Marte; visita guiada; pergunta do quiz; resposta certa a verde; ecrã final.
 - Áudio: confirmado que cada fala está realmente a tocar no canal de voz durante os testes.
