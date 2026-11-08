@@ -119,6 +119,7 @@ from galaxy import SpiralGalaxy
 from satellites import EarthSatellite, LunarRocket
 from meteors import MeteorShower
 from scale_manager import ScaleManager, ScaleLevel
+from characters import PlanetCharacters
 
 
 class CameraMode:
@@ -195,6 +196,7 @@ class SolarSimulatorApp:
         self.lunar_rocket: Optional[LunarRocket] = None
         self.meteor_shower: Optional[MeteorShower] = None
         self.scale_manager: Optional[ScaleManager] = None
+        self.planet_characters: Optional[PlanetCharacters] = None  # Personagem apresentador de cada planeta
 
         # ─── Rastreio do planeta selecionado ───
         self.selected_body_id: Optional[str] = "earth"
@@ -269,10 +271,12 @@ class SolarSimulatorApp:
         print("[Simulador] A carregar Sistema Solar (planetas, luas, texturas e modelos 3D)...")
         self.starfield = Starfield(num_stars=3500, radius=4000.0)
         self.solar_system = SolarSystem(textures_dir=TEXTURES_DIR, models_dir=MODELS_DIR)
+        self.planet_characters = PlanetCharacters(base_dir=BASE_DIR, shaders_dir=SHADERS_DIR)
 
         print("[Simulador] A inicializar interface de utilizador (UI)...")
         self.ui_manager = UIManager(self.width, self.height, self.ui_shader)
         self.ui_manager.set_selected_body(CELESTIAL_DATA["earth"])
+        self.ui_manager.set_presenter(self.planet_characters.info_for("earth"))
 
         print("[Simulador] A instanciar módulos cósmicos (Galáxia, Buracos Negros, Asteroides, Cometa...)...")
         self.galaxy = SpiralGalaxy(models_dir=MODELS_DIR, num_stars=250000)
@@ -608,6 +612,7 @@ class SolarSimulatorApp:
             body = self.solar_system.bodies[body_id]
             self.selected_body_id = body_id
             self.ui_manager.set_selected_body(body.data)
+            self.ui_manager.set_presenter(self.planet_characters.info_for(body_id))
             # Foca suavemente no corpo selecionado com distância proporcional ao tamanho
             self.camera.target = glm.vec3(body.current_position)
             if body_id == "sun":
@@ -948,6 +953,18 @@ class SolarSimulatorApp:
                 ring_shader=self.ring_shader,
             )
 
+            # 7b. Personagem apresentador do planeta selecionado (characters.json)
+            if self.planet_characters:
+                self.planet_characters.update(delta_time, self.selected_body_id)
+                self.planet_characters.draw(
+                    self.celestial_shader,
+                    view_matrix,
+                    projection_matrix,
+                    self.camera,
+                    self.solar_system.bodies.get(self.selected_body_id or ""),
+                    current_time,
+                )
+
             # 8. Cintura de Asteroides
             if self.show_asteroids:
                 self.asteroid_belt.draw(
@@ -1012,6 +1029,8 @@ class SolarSimulatorApp:
 
     def _cleanup(self) -> None:
         """Liberta recursos do OpenGL e encerra o GLFW."""
+        if self.planet_characters:
+            self.planet_characters.cleanup()
         glfw.destroy_window(self.window)
         glfw.terminate()
         print("[Simulador] Aplicação terminada com sucesso.")

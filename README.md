@@ -13,11 +13,19 @@ pip install -r requirements.txt
 ```
 *(Dependências: `PyOpenGL`, `glfw`, `Pillow`, `numpy`, `PyGLM`, `trimesh`)*
 
+Com um ambiente virtual (recomendado):
+```bash
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+> Em Python 3.13/3.14 o `pygame` não tem versão pré-compilada e a instalação falha. O código não usa `pygame`; nesse caso instale as restantes dependências e `pygame-ce` no lugar dele.
+
 ### 2. Iniciar a Simulação
 Para iniciar o simulador completo:
 ```bash
 python main.py
 ```
+Ou com duplo clique em `run.bat` (Windows), que usa o `.venv` se existir e, caso contrário, o `python` do sistema.
 
 ---
 
@@ -89,6 +97,7 @@ python main.py
 |---|---|
 | **I** | Mostrar / Ocultar Painel de Dados Astronómicos Reais (NASA/JPL) |
 | **F1** | Mostrar / Ocultar Ecrã de Ajuda com todos os comandos |
+| **1–8 / TAB / Clique** | Além de focar o planeta, mostra o seu **personagem apresentador** ao lado dele (ver [CHARACTERS.md](CHARACTERS.md)) |
 
 ---
 
@@ -115,3 +124,9 @@ python main.py
    - **Captura de Corpos Celestes Reais**: Asteroides, cometas com cauda de plasma, meteoros incandescentes, satélites orbitais e foguetões lunares são atraídos em espirais ultra-rápidas para o centro das singularidades, sofrendo aceleração por conservação de momento angular e espargueteificação gravitacional antes de serem consumidos pelo horizonte de eventos.
    - **Sensação de Sucção e Distorção de Espaço-Tempo**: Ao entrar na área de atração do buraco negro/minhoca, a câmara é atraída progressivamente com aberração ótica relativística (o campo visual FOV deforma-se dinamicamente até 77° gerando a perceção de mergulho num túnel) acompanhado de tremores de maré gravitacional.
    - **Escape com a Tecla `[SHIFT]`**: O piloto pode a qualquer momento ligar os propulsores warp mantendo `[SHIFT]` premido para aplicar empuxo de escape em sentido oposto, rompendo a atração do buraco de minhoca e estabilizando a trajetória.
+9. **Personagens Apresentadores dos Planetas**:
+   - Cada planeta (Mercúrio a Úrano) tem um personagem 3D animado que aparece ao seu lado quando é selecionado: acena ao aparecer e depois fica em repouso (respiração, cabeça a olhar à volta). Nome e frase no painel de informação. Neptuno está vago.
+   - Os 7 personagens Mixamo que já estavam em `Models/` (`.fbx`) foram convertidos, com esqueleto e pesos de pele, para `.npz` em `Models/characters/` pela ferramenta `tools/fbx_to_glb.py`, já que o trimesh não lê FBX.
+   - Animação procedural com *skinning* na GPU: `character_rig.py` calcula a pose dos ossos a cada frame e `shaders/skinned.vert` deforma a malha.
+   - A tabela planeta → personagem está em `characters.json`: trocar um personagem não exige alterar código.
+   - Detalhes completos (origem dos modelos, licença, como adicionar novos): [CHARACTERS.md](CHARACTERS.md).
