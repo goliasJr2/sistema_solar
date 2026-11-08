@@ -202,6 +202,14 @@ class SolarSimulatorApp:
         self.camera_mode: int = CameraMode.FOCUS  # Modos de câmara: Explore / Follow / Focus [P]
         self.current_black_hole_alert: Optional[dict] = None  # Alerta de proximidade de buraco negro
 
+        # ─── Estado do Sistema de Buracos Negros Cósmicos ───
+        self.bh_arrow_up_timer: float = 0.0
+        self.bh_danger_alert_active: bool = False
+        self.bh_revealed: bool = False
+        self.bh_primary_aligned: bool = False
+        self.bh_face_to_face: Optional[str] = None
+        self.bh_face_to_face_timer: float = 0.0
+
         # ─── Shaders ───
         self.celestial_shader: Optional[Shader] = None
         self.sun_shader: Optional[Shader] = None
@@ -439,11 +447,42 @@ class SolarSimulatorApp:
         # ── [G] Buracos Negros — ciclar foco ─────────────────────────────────
         elif key == glfw.KEY_G:
             self.show_blackholes = True
-            bh = self.black_hole_system.cycle_next()
-            self.camera.target = glm.vec3(bh.position)
-            self.camera.distance = bh.scale * 3.5
-            self.camera._update_camera_vectors()
-            print(f"[Buraco Negro] Foco em: {bh.name}")
+            self.bh_revealed = True
+            if self.black_hole_system:
+                self.black_hole_system.reveal_all()
+                bh = self.black_hole_system.cycle_next()
+                self.camera.target = glm.vec3(bh.position)
+                self.camera.distance = max(40.0, bh.scale * 3.5)
+                self.camera._update_camera_vectors()
+                self.camera_tracking = False
+                print(f"[Buraco Negro] Foco em: {bh.name}")
+
+        # ── [ALT] Frente a Frente com o Buraco Negro ──────────────────────────
+        elif key in (glfw.KEY_LEFT_ALT, glfw.KEY_RIGHT_ALT):
+            self.show_blackholes = True
+            self.bh_revealed = True
+            self.bh_arrow_up_timer = max(self.bh_arrow_up_timer, 10.0)
+            self.camera_tracking = False
+
+            if self.black_hole_system:
+                self.black_hole_system.reveal_all()
+                if self.bh_face_to_face:
+                    bh = self.black_hole_system.cycle_next()
+                else:
+                    bh = self.black_hole_system.get_current()
+
+                self.bh_face_to_face = bh.name
+                self.bh_face_to_face_timer = 9.0
+
+                # Posicionamento direto da câmara face a face com o buraco negro
+                self.camera.target = glm.vec3(bh.position)
+                self.camera.distance = max(42.0, bh.scale * 2.8)
+                self.camera.pitch = 5.0
+                self.camera.yaw = 90.0
+                self.camera._update_camera_vectors()
+                if self.ui_manager:
+                    self.ui_manager.set_selected_body(None)
+                print(f"[Buraco Negro] FRENTE A FRENTE com {bh.name} a {self.camera.distance:.1f} UA!")
 
         # ── [L] Satélite + Foguetão Lunar ─────────────────────────────────────
         elif key == glfw.KEY_L:
@@ -642,6 +681,47 @@ class SolarSimulatorApp:
         if nav_down:
             self.camera.process_keyboard("DOWN", delta_time * boost)
 
+        # ── Controlo de Ativação do Buraco Negro: Seta Cima por 5s + 5s ────────
+        dist_from_sun = glm.length(self.camera.position)
+        outside_solar_system = dist_from_sun >= 200.0
+        is_pressing_up = (
+            glfw.get_key(self.window, glfw.KEY_UP) == glfw.PRESS
+            or glfw.get_key(self.window, glfw.KEY_W) == glfw.PRESS
+        )
+
+        if outside_solar_system and is_pressing_up:
+            self.bh_arrow_up_timer += delta_time
+
+            # 1. Alerta de Perigo após 5 segundos contínuos
+            if self.bh_arrow_up_timer >= 5.0 and not self.bh_danger_alert_active:
+                self.bh_danger_alert_active = True
+                print("\n" + "=" * 70)
+                print("[ALERTA DE PERIGO] DISTORÇÃO ESPAÇO-TEMPORAL CRÍTICA DETETADA!")
+                print("Mantenha premida a Seta Cima mais 5s para revelar ou prima [ALT] para ficar Frente a Frente!")
+                print("=" * 70 + "\n")
+
+            # 2. Revelação e manifestação do Buraco Negro após mais 5 segundos (10s total)
+            if self.bh_arrow_up_timer >= 10.0 and not self.bh_revealed:
+                self.bh_revealed = True
+                self.show_blackholes = True
+                if self.black_hole_system:
+                    self.black_hole_system.reveal_all()
+                    if not self.bh_primary_aligned:
+                        self.black_hole_system.align_primary_ahead(self.camera.position, self.camera.front, 260.0)
+                        self.bh_primary_aligned = True
+                print("\n" + "=" * 70)
+                print("[BURACO NEGRO] SINGULARIDADE REVELADA DIRETAMENTE À SUA FRENTE!")
+                print("Prima [ALT] a qualquer momento para se colocar Frente a Frente com o Buraco Negro!")
+                print("=" * 70 + "\n")
+        else:
+            if self.bh_arrow_up_timer < 5.0:
+                self.bh_arrow_up_timer = max(0.0, self.bh_arrow_up_timer - delta_time * 1.5)
+
+        if self.bh_face_to_face_timer > 0.0:
+            self.bh_face_to_face_timer -= delta_time
+            if self.bh_face_to_face_timer <= 0.0:
+                self.bh_face_to_face = None
+
     def _update_window_title(self, delta_time: float) -> None:
         """Atualiza o título da janela com FPS, estado e tempo simulado."""
         self.fps_counter += 1
@@ -697,10 +777,56 @@ class SolarSimulatorApp:
                     earth_pos = self.solar_system.bodies["earth"].current_position
                     self.meteor_shower.update(delta_time, earth_pos)
 
-            # Verificação da área de atuação dos buracos negros e atração gravitacional
+            # Verificação e Alertas de Buracos Negros Cósmicos
             if self.black_hole_system:
-                self.current_black_hole_alert = self.black_hole_system.check_proximity(self.camera.position)
-                if self.current_black_hole_alert and self.current_black_hole_alert["is_critical"]:
+                dist_from_sun = glm.length(self.camera.position)
+                outside_solar = dist_from_sun >= 200.0
+
+                if self.bh_face_to_face and self.bh_face_to_face_timer > 0.0:
+                    self.current_black_hole_alert = {
+                        "type": "FACE_TO_FACE",
+                        "name": self.bh_face_to_face,
+                        "distance": self.camera.distance,
+                    }
+                elif self.bh_revealed and 10.0 <= self.bh_arrow_up_timer <= 18.0:
+                    pri_bh = self.black_hole_system.get_primary()
+                    pri_dist = glm.length(pri_bh.position - self.camera.position)
+                    self.current_black_hole_alert = {
+                        "type": "REVEALED",
+                        "name": pri_bh.name,
+                        "distance": pri_dist,
+                    }
+                elif self.bh_danger_alert_active and self.bh_arrow_up_timer < 10.0:
+                    self.current_black_hole_alert = {
+                        "type": "DANGER",
+                        "progress_sec": self.bh_arrow_up_timer - 5.0,
+                    }
+                elif outside_solar and 1.0 < self.bh_arrow_up_timer < 5.0:
+                    self.current_black_hole_alert = {
+                        "type": "OUTSIDE_CHARGING",
+                        "progress_sec": self.bh_arrow_up_timer,
+                    }
+                else:
+                    prox = self.black_hole_system.check_proximity(self.camera.position)
+                    if prox:
+                        self.current_black_hole_alert = {
+                            "type": "PROXIMITY",
+                            "name": prox["name"],
+                            "distance": prox["distance"],
+                            "is_critical": prox["is_critical"],
+                            "position": prox["position"],
+                            "pull_radius": prox["pull_radius"],
+                        }
+                    else:
+                        self.current_black_hole_alert = None
+
+                # Atração gravitacional apenas se crítico e não estiver em vista face a face
+                if (
+                    self.current_black_hole_alert
+                    and self.current_black_hole_alert.get("type") == "PROXIMITY"
+                    and self.current_black_hole_alert.get("is_critical")
+                    and not self.bh_face_to_face
+                ):
                     bh_pos = self.current_black_hole_alert["position"]
                     pull_dir = glm.normalize(bh_pos - self.camera.position)
                     pull_speed = 35.0 * (1.0 - (self.current_black_hole_alert["distance"] / self.current_black_hole_alert["pull_radius"]))

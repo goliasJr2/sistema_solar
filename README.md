@@ -69,7 +69,9 @@ python main.py
 | **C** | **Cometa 3I/ATLAS** | Alterna o cometa em órbita altamente excêntrica com cauda dinâmica |
 | **L** | **Satélites Artificiais** | Alterna a estação orbital da Terra e o foguetão lunar Apollo |
 | **M** | **Chuva de Meteoros** | Alterna a tempestade de meteoros e bólides atmosféricos |
-| **G** | **Buracos Negros** | Cicla o foco entre Sagitário A*, Cygnus X-1 e Gargantua |
+| **▲ (Seta Cima)** | **Alerta & Descoberta Cósmica** | Ao sair do Sistema Solar (deixando o Sol para trás): segurar por 5s dispara o **Alerta de Perigo Espaço-Temporal**; continuar por mais 5s revela o **Buraco Negro** diretamente à sua frente |
+| **ALT** | **Frente a Frente Cósmico** | Teleporta a câmara e coloca-a imediatamente **Frente a Frente** com a singularidade (e cicla entre os 8 modelos 3D espalhados pelo espaço profundo) |
+| **G** | **Buracos Negros** | Cicla o foco e inspeciona as 8 singularidades cósmicas |
 | **V** | **Galáxia Espiral** | Alterna a visualização da Via Láctea com 250.000 estrelas |
 
 ### 🔭 Escalas Cósmicas e Transições Cinematográficas
@@ -104,3 +106,7 @@ python main.py
    - Implementação de ray-tracing analítico em `ring.frag`: a esfera física de Saturno projeta uma sombra escura e suave (*smoothstep penumbra*) diretamente sobre a malha de anéis `saturn_ring.png`, simulando a oclusão física da luz solar.
 6. **Modos de Câmara Unificados (Explore / Follow / Focus)**:
    - Ciclo de navegação acionado por `[P]`, com exibição em tempo real do estado no HUD superior.
+7. **Sistema Cósmico de 8 Buracos Negros e Encontro Imediato**:
+   - Carregamento de todos os 8 modelos 3D de singularidades presentes em `Models/` (`black_hole.glb`, `black_hole_12.glb`, `black_hole_galaxy.glb`, `black_hole (1).glb`, `black_hole (2).glb`, `black_hole (3).glb`, `black_hole_12 (1).glb` e `not_a_black_hole_-_1.glb`), distribuídos em direções cósmicas esféricas a 360°.
+   - Mecânica dinâmica de descoberta: ao sair do Sistema Solar e navegar com a seta para cima `[▲]` (ou `W`), 5 segundos acionam um alerta de perigo gravitacional no HUD; mais 5 segundos revelam e posicionam a singularidade primária à frente da sua trajetória.
+   - Tecla `[ALT]`: teletransporte instantâneo para ficar frente a frente com o buraco negro, permitindo inspecionar o horizonte de eventos e ciclar entre todas as singularidades.

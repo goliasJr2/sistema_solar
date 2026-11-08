@@ -278,35 +278,72 @@ class UIManager:
 
     def _draw_black_hole_warning(self, draw: ImageDraw.ImageDraw, alert: dict) -> None:
         """Desenha o banner de alerta sci-fi de aproximação à área de atuação de um buraco negro."""
-        box_width = min(560, self.width - 40)
-        box_height = 74
+        alert_type = alert.get("type", "PROXIMITY")
+
+        box_width = min(660, self.width - 40)
+        box_height = 80
         x0 = (self.width - box_width) // 2
         y0 = self.hud_height + 14
         x1 = x0 + box_width
         y1 = y0 + box_height
 
-        is_crit = alert.get("is_critical", False)
-        bg_col = (48, 8, 12, 235) if is_crit else (26, 12, 18, 220)
-        border_col = (255, 45, 45, 255) if is_crit else (255, 145, 40, 240)
+        if alert_type == "FACE_TO_FACE":
+            bg_col = (35, 12, 50, 240)
+            border_col = (195, 80, 255, 255)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+            draw.text((x0 + 18, y0 + 10), "👁 FRENTE A FRENTE COM O BURACO NEGRO", fill=(230, 180, 255), font=self.font_subtitle)
+            name_str = f"Singularidade: {alert.get('name', 'Buraco Negro')}  |  Distância: {alert.get('distance', 0.0):.1f} UA"
+            draw.text((x0 + 18, y0 + 32), name_str, fill=(255, 255, 255), font=self.font_text)
+            sub_str = "Prima [ALT] para o próximo buraco negro (8 no total)  |  [0] Sistema Solar"
+            draw.text((x0 + 18, y0 + 54), sub_str, fill=(210, 180, 250), font=self.font_small)
 
-        # Caixa com cantos arredondados e contorno de aviso
-        draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+        elif alert_type == "DANGER":
+            bg_col = (48, 8, 12, 240)
+            border_col = (255, 45, 45, 255)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+            draw.text((x0 + 18, y0 + 10), "⚠ ALERTA DE PERIGO: DISTORÇÃO ESPAÇO-TEMPORAL DETETADA!", fill=(255, 65, 65), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 32), "Horizonte de eventos iminente à sua frente no espaço profundo!", fill=(255, 230, 230), font=self.font_text)
+            sec_held = alert.get("progress_sec", 0.0)
+            rem = max(0.0, 5.0 - sec_held)
+            sub_str = f"Mantenha premido [▲ Seta Cima] mais {rem:.1f}s para revelar  |  Prima [ALT] Frente a Frente"
+            draw.text((x0 + 18, y0 + 54), sub_str, fill=(255, 175, 50), font=self.font_small)
 
-        # Linha de cabeçalho
-        title = "⚠ ALERTA CRÍTICO: HORIZONTE DE EVENTOS PRÓXIMO!" if is_crit else "⚠ AVISO: CAMPO DE ATRAÇÃO GRAVITACIONAL"
-        title_col = (255, 65, 65) if is_crit else (255, 185, 45)
-        draw.text((x0 + 18, y0 + 10), title, fill=title_col, font=self.font_subtitle)
+        elif alert_type == "REVEALED":
+            bg_col = (25, 18, 38, 235)
+            border_col = (255, 185, 40, 255)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+            draw.text((x0 + 18, y0 + 10), "🌌 BURACO NEGRO VISÍVEL À SUA FRENTE!", fill=(255, 215, 60), font=self.font_subtitle)
+            name_str = f"Singularidade: {alert.get('name', 'Cygnus X-1')}  |  Distância: {alert.get('distance', 0.0):.1f} UA"
+            draw.text((x0 + 18, y0 + 32), name_str, fill=(245, 245, 250), font=self.font_text)
+            sub_str = "Prima [ALT] agora para ficar Frente a Frente com o Buraco Negro!"
+            draw.text((x0 + 18, y0 + 54), sub_str, fill=(255, 230, 150), font=self.font_small)
 
-        # Nome do Buraco Negro
-        name_str = f"Singularidade Detetada: {alert['name']}"
-        draw.text((x0 + 18, y0 + 31), name_str, fill=(245, 245, 250), font=self.font_text)
+        elif alert_type == "OUTSIDE_CHARGING":
+            box_height = 54
+            y1 = y0 + box_height
+            bg_col = (12, 18, 32, 220)
+            border_col = (70, 140, 245, 220)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=bg_col, outline=border_col, width=1)
+            sec_held = alert.get("progress_sec", 0.0)
+            draw.text((x0 + 18, y0 + 8), "🚀 SAÍDA DO SISTEMA SOLAR EM CURSO", fill=(100, 185, 255), font=self.font_subtitle)
+            sub_str = f"Avanço no vazio cósmico: {sec_held:.1f}s / 5.0s (Mantenha premido [▲ Seta Cima] para acionar alerta)"
+            draw.text((x0 + 18, y0 + 29), sub_str, fill=(200, 220, 255), font=self.font_small)
 
-        # Distância e Estado
-        dist = alert['distance']
-        status_txt = "FORÇA DE MARÉ CRÍTICA — ATRAÇÃO ATIVA!" if is_crit else "Aproximação perigosa ao espaço exterior"
-        sub_str = f"Distância: {dist:.1f} UA  |  {status_txt}"
-        sub_col = (255, 140, 140) if is_crit else (220, 180, 130)
-        draw.text((x0 + 18, y0 + 51), sub_str, fill=sub_col, font=self.font_small)
+        else:
+            is_crit = alert.get("is_critical", False)
+            bg_col = (48, 8, 12, 235) if is_crit else (26, 12, 18, 220)
+            border_col = (255, 45, 45, 255) if is_crit else (255, 145, 40, 240)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+            title = "⚠ ALERTA CRÍTICO: HORIZONTE DE EVENTOS PRÓXIMO!" if is_crit else "⚠ AVISO: CAMPO DE ATRAÇÃO GRAVITACIONAL"
+            title_col = (255, 65, 65) if is_crit else (255, 185, 45)
+            draw.text((x0 + 18, y0 + 10), title, fill=title_col, font=self.font_subtitle)
+            name_str = f"Singularidade Detetada: {alert.get('name', 'Buraco Negro')}"
+            draw.text((x0 + 18, y0 + 31), name_str, fill=(245, 245, 250), font=self.font_text)
+            dist = alert.get('distance', 0.0)
+            status_txt = "FORÇA DE MARÉ CRÍTICA — ATRAÇÃO ATIVA!" if is_crit else "Aproximação ao espaço exterior (Prima [ALT] Frente a Frente)"
+            sub_str = f"Distância: {dist:.1f} UA  |  {status_txt}"
+            sub_col = (255, 140, 140) if is_crit else (220, 180, 130)
+            draw.text((x0 + 18, y0 + 51), sub_str, fill=sub_col, font=self.font_small)
 
     def _draw_planet_info_panel(self, draw: ImageDraw.ImageDraw) -> None:
         """Desenha o painel lateral com a ficha técnica astronómica completa do corpo selecionado."""
@@ -425,7 +462,9 @@ class UIManager:
             ("[C]     ", "Ligar / Desligar cometa e sua cauda/órbita"),
             ("[L]     ", "Ligar / Desligar satélite artificial e foguetão lunar"),
             ("[M]     ", "Ligar / Desligar chuva de meteoros e bólides"),
-            ("[G]     ", "Ciclar foco nos Buracos Negros (Sgr A*, Cygnus X-1, Gargantua)"),
+            ("[▲]     ", "Fora do Sist. Solar: Segurar 5s Alerta Perigo | +5s Revela Buraco Negro"),
+            ("[ALT]   ", "Frente a Frente com o Buraco Negro (cicla entre as 8 singularidades)"),
+            ("[G]     ", "Ciclar foco entre os 8 Buracos Negros cósmicos"),
             ("[V]     ", "Ligar / Desligar galáxia espiral Via Láctea"),
         ]
         for key, desc in sim_cmds:
