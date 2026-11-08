@@ -5,6 +5,9 @@ selecionado. Ao aparecer, o personagem **acena** com o braço direito; depois fi
 **repouso**, com respiração, cabeça a olhar à volta e um leve balanço do corpo. O nome
 e uma frase sobre o planeta aparecem no painel de informação (tecla **I**).
 
+> As falas, a voz, os gestos de apontar e falar, a visita guiada e o quiz estão descritos
+> em [APRESENTACAO.md](APRESENTACAO.md).
+
 ---
 
 ## Como usar

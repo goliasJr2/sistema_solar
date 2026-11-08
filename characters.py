@@ -107,8 +107,9 @@ class SkinnedCharacterModel:
             glBindVertexArray(0)
             self._parts.append((vao, vbo, ebo, len(faces), _upload_texture(img)))
 
-    def draw(self, shader: Shader, t: float, wave: float) -> None:
-        palette = self.rig.palette(t, wave)
+    def draw(self, shader: Shader, t: float, wave: float, point: float = 0.0,
+             point_dir=None, talk: float = 0.0) -> None:
+        palette = self.rig.palette(t, wave, point, point_dir, talk)
         loc = shader.get_uniform_location("uBones")
         if loc != -1:
             glUniformMatrix4fv(loc, len(palette), GL_FALSE, np.ascontiguousarray(palette.transpose(0, 2, 1)))
@@ -128,10 +129,11 @@ class SkinnedCharacterModel:
 
 
 class PlanetCharacters:
-    """Gere e desenha o personagem apresentador do planeta selecionado."""
+    """Gere e desenha o personagem apresentador do planeta selecionado.
+    Os gestos (aceno, apontar, falar) são decididos pelo presentation.py."""
 
-    APPEAR_SECONDS = 0.6                 # Duração da animação de entrada
-    WAVE_IN, WAVE_HOLD, WAVE_OUT = 0.35, 2.4, 0.6   # Aceno: subir, acenar, baixar (s)
+    APPEAR_SECONDS = 0.6     # Duração da animação de entrada
+    GESTURE_RATE = 5.0       # Velocidade das transições entre gestos (1/s)
 
     def __init__(self, base_dir: Path, shaders_dir: Optional[Path] = None,
                  config_file: str = "characters.json"):
@@ -141,7 +143,12 @@ class PlanetCharacters:
         self._models: Dict[str, Optional[Union[GLBModel, SkinnedCharacterModel]]] = {}
         self._active_id: Optional[str] = None
         self._since = 0.0      # segundos desde que o planeta atual foi selecionado
+        self._gestures = [0.0, 0.0, 0.0]   # aceno, apontar, falar (suavizados)
         self.skinned_shader: Optional[Shader] = None
+        # Atualizados a cada desenho: ponto acima da cabeça (balão) e esfera de clique
+        self.anchor_world: Optional[glm.vec3] = None
+        self.hit_center: Optional[glm.vec3] = None
+        self.hit_radius = 0.0
         self._load_config(self.base_dir / config_file)
 
         shaders_dir = Path(shaders_dir) if shaders_dir else self.base_dir / "shaders"
@@ -192,30 +199,28 @@ class PlanetCharacters:
         return self._models[rel_path]
 
     # ------------------------------------------------------------------ ciclo
-    def update(self, delta_time: float, selected_id: Optional[str]) -> None:
-        """Reinicia as animações de entrada e de aceno quando muda o planeta selecionado."""
+    def update(self, delta_time: float, selected_id: Optional[str],
+               gestures=(0.0, 0.0, 0.0)) -> None:
+        """Reinicia a entrada ao mudar de planeta e aproxima suavemente os gestos
+        (aceno, apontar, falar) dos valores pedidos pelo presentation.py."""
         if selected_id != self._active_id:
             self._active_id = selected_id
             self._since = 0.0
+            self._gestures = [0.0, 0.0, 0.0]
         else:
             self._since += delta_time
+        k = min(1.0, delta_time * self.GESTURE_RATE)
+        for i, target in enumerate(gestures):
+            self._gestures[i] += (float(target) - self._gestures[i]) * k
 
-    def _wave_weight(self) -> float:
-        """0 → 1 (sobe o braço) → acena → 0 (baixa), com transições suaves."""
-        t = self._since - self.APPEAR_SECONDS * 0.5
-        a, b, c = self.WAVE_IN, self.WAVE_IN + self.WAVE_HOLD, self.WAVE_IN + self.WAVE_HOLD + self.WAVE_OUT
-
-        def smooth(x: float) -> float:
-            x = max(0.0, min(1.0, x))
-            return x * x * (3 - 2 * x)
-
-        if t <= 0 or t >= c:
-            return 0.0
-        if t < a:
-            return smooth(t / a)
-        if t < b:
-            return 1.0
-        return 1.0 - smooth((t - b) / (c - b))
+    def hit_test(self, ray_origin: glm.vec3, ray_dir: glm.vec3) -> bool:
+        """O raio do rato atinge o personagem visível? (esfera envolvente)"""
+        if self.hit_center is None:
+            return False
+        oc = ray_origin - self.hit_center
+        b = glm.dot(oc, ray_dir)
+        c = glm.dot(oc, oc) - self.hit_radius * self.hit_radius
+        return b * b - c >= 0.0 and (-b + (b * b - c) ** 0.5) > 0.0
 
     def draw(
         self,
@@ -228,6 +233,7 @@ class PlanetCharacters:
     ) -> None:
         """Desenha o personagem do planeta `body` (objeto CelestialBody selecionado).
         `shader` é o celestial (para modelos .glb estáticos)."""
+        self.anchor_world = self.hit_center = None
         if body is None:
             return
         entry = self.info_for(self._active_id)
@@ -263,6 +269,16 @@ class PlanetCharacters:
         model_height = model.height if animated else float(model.normalized_extents[1])
         scale = (height / max(model_height, 1e-6)) * appear
 
+        # Para o balão de fala e o clique (o modelo está centrado: cabeça a +altura/2)
+        self.anchor_world = pos + glm.vec3(0.0, height * 0.5 * appear, 0.0)
+        self.hit_center = glm.vec3(pos)
+        self.hit_radius = height * 0.45
+
+        # Direção do planeta no espaço do personagem (para apontar): desfaz a rotação yaw
+        to_planet = glm.vec3(body.current_position) - pos
+        c_y, s_y = math.cos(-yaw), math.sin(-yaw)
+        point_dir = (c_y * to_planet.x + s_y * to_planet.z, to_planet.y, -s_y * to_planet.x + c_y * to_planet.z)
+
         m = glm.mat4(1.0)
         m = glm.translate(m, pos)
         m = glm.rotate(m, yaw, glm.vec3(0.0, 1.0, 0.0))
@@ -289,7 +305,8 @@ class PlanetCharacters:
         # Algumas malhas (cabelo, roupa) têm faces viradas para os dois lados
         glDisable(GL_CULL_FACE)
         if animated:
-            model.draw(prog, current_time, self._wave_weight())
+            wave, point, talk = self._gestures
+            model.draw(prog, current_time, wave, point, point_dir, talk)
         else:
             model.draw()
         glEnable(GL_CULL_FACE)
