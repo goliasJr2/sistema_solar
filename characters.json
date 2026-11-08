@@ -1,8 +1,25 @@
 {
-  "_comentario": "Personagem apresentador de cada planeta. Para trocar um personagem, ponha o modelo em Models/characters/ e altere 'model' (e os créditos): .npz = animado (gerado por tools/fbx_to_glb.py a partir de um FBX com esqueleto), .glb = estático. 'model': null deixa o planeta sem apresentador. Ver CHARACTERS.md.",
+  "_comentario": "Personagem apresentador de cada planeta. Para trocar um personagem, ponha o modelo em Models/characters/ e altere 'model' (e os créditos): .npz = animado (gerado por tools/fbx_to_glb.py a partir de um FBX com esqueleto), .glb = estático. 'model': null deixa o planeta sem personagem (o narrador fala por ele). Depois de mudar textos, gere as vozes de novo: tools/gerar_vozes.py. Ver CHARACTERS.md e APRESENTACAO.md.",
   "defaults": {
     "height_factor": 1.4,
     "side_offset": 2.1
+  },
+  "narrator": {
+    "name": "Narradora",
+    "voice": {"name": "Helia", "pitch": "0%", "rate": 1.0},
+    "lines": {
+      "welcome": "Bem-vindos ao Sistema Solar! Escolham um planeta com as teclas 1 a 8, ou carreguem em J para a visita guiada.",
+      "tour_intro": "Bem-vindos à visita guiada do Sistema Solar! Cada planeta tem o seu apresentador. Vamos começar por Mercúrio.",
+      "quiz_intro": "Hora do quiz! Responde com as teclas 1, 2 ou 3.",
+      "correct": "Correto!",
+      "wrong": "Quase! A resposta certa está a verde.",
+      "end": "Fim da visita! Obrigado por viajarem connosco."
+    }
+  },
+  "tour": {
+    "order": ["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"],
+    "facts_per_planet": 2,
+    "quiz_questions": 3
   },
   "planets": {
     "mercury": {
@@ -10,35 +27,80 @@
       "model": "Models/characters/ely.npz",
       "tagline": "O mensageiro mais rápido: uma volta ao Sol em 88 dias.",
       "source": "Mixamo (Adobe) — 'Ely by K.Atienza'; FBX original: Models/character (2).fbx",
-      "license": "Termos de utilização Mixamo/Adobe"
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {"name": "Daniel", "pitch": "+5%", "rate": 1.1},
+      "intro": "Olá! Eu sou o Ely e apresento Mercúrio, o planeta mais próximo do Sol.",
+      "facts": [
+        "Mercúrio dá uma volta ao Sol em apenas 88 dias. É o planeta mais rápido.",
+        "Quase não tem atmosfera, por isso a temperatura vai de 430 graus de dia a menos 180 à noite.",
+        "Um dia em Mercúrio, do nascer ao pôr do Sol, dura 176 dias terrestres."
+      ],
+      "handoff": "Agora vamos até Vénus!",
+      "quiz": {"question": "Quanto tempo demora Mercúrio a dar a volta ao Sol?", "options": ["88 dias", "365 dias", "12 anos"], "answer": 0}
     },
     "venus": {
       "character": "Vanguard",
       "model": "Models/characters/vanguard.npz",
       "tagline": "Bem-vindo ao planeta mais quente: 464 °C à superfície.",
       "source": "Mixamo (Adobe) — 'Vanguard By T. Choonyung'; FBX original: Models/character (1).fbx",
-      "license": "Termos de utilização Mixamo/Adobe"
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {"name": "Daniel", "pitch": "-10%", "rate": 0.95},
+      "intro": "Saudações! Sou o Vanguard e guardo Vénus, o planeta mais quente do Sistema Solar.",
+      "facts": [
+        "A atmosfera de dióxido de carbono prende o calor: a superfície chega aos 464 graus.",
+        "Vénus roda ao contrário da maioria dos planetas. Aqui, o Sol nasce a oeste.",
+        "Um dia em Vénus é mais longo do que o seu ano: 243 dias contra 225."
+      ],
+      "handoff": "Sigam agora para a Terra!",
+      "quiz": {"question": "Porque é que Vénus é mais quente do que Mercúrio?", "options": ["Por causa do efeito de estufa", "Porque está mais perto do Sol", "Porque tem vulcões ativos"], "answer": 0}
     },
     "earth": {
       "character": "Remy",
       "model": "Models/characters/remy.npz",
       "tagline": "A nossa casa — o único planeta conhecido com vida.",
       "source": "Mixamo (Adobe) — 'Remy'; FBX original: Models/character.fbx",
-      "license": "Termos de utilização Mixamo/Adobe"
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {"name": "Daniel", "pitch": "0%", "rate": 1.0},
+      "intro": "Olá! Eu sou o Remy. Bem-vindos à Terra, a nossa casa.",
+      "facts": [
+        "A Terra é o único planeta conhecido com água líquida à superfície e com vida.",
+        "Cerca de 71 por cento da superfície da Terra está coberta por oceanos.",
+        "A Lua afasta-se da Terra cerca de 3,8 centímetros por ano."
+      ],
+      "handoff": "Próxima paragem: Marte!",
+      "quiz": {"question": "Que parte da superfície da Terra está coberta por oceanos?", "options": ["Cerca de 71%", "Cerca de 30%", "Cerca de 95%"], "answer": 0}
     },
     "mars": {
       "character": "Maw",
       "model": "Models/characters/maw.npz",
       "tagline": "O planeta vermelho guarda o maior vulcão do sistema solar.",
       "source": "Mixamo (Adobe) — 'Maw J Laygo'; FBX original: Models/character (3).fbx",
-      "license": "Termos de utilização Mixamo/Adobe"
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {"name": "Daniel", "pitch": "-30%", "rate": 0.85},
+      "intro": "Sou o Maw, o guardião de Marte, o planeta vermelho.",
+      "facts": [
+        "Marte é vermelho por causa do óxido de ferro, a ferrugem, que cobre o seu solo.",
+        "Aqui fica o Monte Olimpo, o maior vulcão do Sistema Solar, com cerca de 22 quilómetros de altura.",
+        "Marte tem duas pequenas luas: Fobos e Deimos."
+      ],
+      "handoff": "Agora, o gigante: Júpiter!",
+      "quiz": {"question": "Porque é que Marte é vermelho?", "options": ["Ferrugem (óxido de ferro) no solo", "Lava a arrefecer", "Reflexo da luz do Sol"], "answer": 0}
     },
     "jupiter": {
       "character": "Warrok",
       "model": "Models/characters/warrok.npz",
       "tagline": "O gigante: cabem aqui mais de 1300 Terras.",
       "source": "Mixamo (Adobe) — 'Warrok W Kurniawan'; FBX original: Models/Warrok W Kurniawan.fbx",
-      "license": "Termos de utilização Mixamo/Adobe"
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {"name": "Daniel", "pitch": "-35%", "rate": 0.85},
+      "intro": "Eu sou o Warrok! E este é Júpiter, o gigante do Sistema Solar.",
+      "facts": [
+        "Júpiter é tão grande que caberiam lá dentro mais de 1300 Terras.",
+        "A Grande Mancha Vermelha é uma tempestade maior do que a Terra, ativa há séculos.",
+        "Um dia em Júpiter dura menos de 10 horas. É o planeta que roda mais depressa."
+      ],
+      "handoff": "Vamos aos anéis de Saturno!",
+      "quiz": {"question": "Quantas Terras caberiam dentro de Júpiter?", "options": ["Mais de 1300", "Cerca de 10", "Cerca de 100"], "answer": 0}
     },
     "saturn": {
       "character": "Mutant",
@@ -46,21 +108,47 @@
       "tagline": "Senhor dos anéis — feitos de gelo e rocha.",
       "source": "Mixamo (Adobe) — 'Mutant'; FBX original: Models/Mutant.fbx",
       "license": "Termos de utilização Mixamo/Adobe",
-      "side_offset": 2.9
+      "side_offset": 2.9,
+      "voice": {"name": "Daniel", "pitch": "-25%", "rate": 0.9},
+      "intro": "Sou o Mutant, senhor de Saturno e dos seus anéis.",
+      "facts": [
+        "Os anéis de Saturno são feitos de pedaços de gelo e rocha, do tamanho de grãos de poeira a casas.",
+        "Saturno é tão pouco denso que, numa banheira gigante, flutuaria na água.",
+        "Titã, a maior lua de Saturno, tem uma atmosfera espessa e lagos de metano."
+      ],
+      "handoff": "Sigam para Úrano, o planeta deitado!",
+      "quiz": {"question": "De que são feitos os anéis de Saturno?", "options": ["Gelo e rocha", "Gás", "Metal"], "answer": 0}
     },
     "uranus": {
       "character": "Goblin",
       "model": "Models/characters/goblin.npz",
       "tagline": "Rodo deitado: o meu eixo está inclinado 98°.",
       "source": "Mixamo (Adobe) — 'Goblin D Shareyko'; FBX original: Models/goblin_d_shareyko.fbx",
-      "license": "Termos de utilização Mixamo/Adobe"
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {"name": "Daniel", "pitch": "+25%", "rate": 1.1},
+      "intro": "Sou o Goblin, e Úrano é o meu planeta deitado!",
+      "facts": [
+        "Úrano roda deitado: o seu eixo está inclinado cerca de 98 graus.",
+        "A cor azul-esverdeada vem do metano na atmosfera.",
+        "Foi o primeiro planeta descoberto com um telescópio, por William Herschel, em 1781."
+      ],
+      "handoff": "Por fim, Neptuno!",
+      "quiz": {"question": "Qual é a inclinação do eixo de Úrano?", "options": ["Cerca de 98 graus", "Cerca de 23 graus", "Zero graus"], "answer": 0}
     },
     "neptune": {
       "character": null,
       "model": null,
       "tagline": null,
-      "source": "Vaga — só existiam 7 personagens no projeto. Ver CHARACTERS.md para adicionar um.",
-      "license": null
+      "source": "Sem personagem — só existiam 7 no projeto. A narradora apresenta Neptuno. Ver CHARACTERS.md para adicionar um.",
+      "license": null,
+      "intro": "Neptuno ainda não tem apresentador, por isso apresento-o eu.",
+      "facts": [
+        "Neptuno tem os ventos mais fortes do Sistema Solar: mais de 2000 quilómetros por hora.",
+        "Foi descoberto em 1846 graças à matemática, antes de ser visto ao telescópio.",
+        "Uma volta de Neptuno ao Sol demora 165 anos terrestres."
+      ],
+      "handoff": null,
+      "quiz": {"question": "Como foi descoberto Neptuno?", "options": ["Por cálculos matemáticos", "Por acaso, numa fotografia", "Por uma sonda espacial"], "answer": 0}
     }
   }
 }
