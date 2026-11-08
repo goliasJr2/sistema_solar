@@ -120,6 +120,7 @@ from satellites import EarthSatellite, LunarRocket
 from meteors import MeteorShower
 from scale_manager import ScaleManager, ScaleLevel
 from characters import PlanetCharacters
+from guide.virtual_guide import AstronomicalVirtualGuide
 
 
 class CameraMode:
@@ -197,6 +198,10 @@ class SolarSimulatorApp:
         self.meteor_shower: Optional[MeteorShower] = None
         self.scale_manager: Optional[ScaleManager] = None
         self.planet_characters: Optional[PlanetCharacters] = None  # Personagem apresentador de cada planeta
+
+        # ─── Guia Virtual 3D ───
+        self.virtual_guide: Optional[AstronomicalVirtualGuide] = None
+        self.guide_active: bool = False
 
         # ─── Rastreio do planeta selecionado ───
         self.selected_body_id: Optional[str] = "earth"
@@ -288,6 +293,10 @@ class SolarSimulatorApp:
         self.meteor_shower = MeteorShower(models_dir=MODELS_DIR, num_meteors=45)
         self.scale_manager = ScaleManager(self.camera)
 
+        print("[Simulador] A inicializar Guia Virtual 3D (Astronomical Virtual Guide)...")
+        self.virtual_guide = AstronomicalVirtualGuide(model_path=str(MODELS_DIR / "guide_remy.glb"))
+        self.virtual_guide.initialize_gl()
+
         print("[Simulador] Inicialização concluída! Sistema Solar em destaque.")
         self._print_controls_guide()
 
@@ -330,8 +339,10 @@ class SolarSimulatorApp:
         print(" [F4]          : Nível 3 — Sistema Solar (padrão)")
         print(" [ENTER]       : Nível 4 — Superfície do planeta selecionado")
         print(" [ESC]         : Voltar ao Sistema Solar / Sair")
-        print(" ─── INTERFACE ───────────────────────────────────────────────────")
+        print(" ─── INTERFACE E GUIA VIRTUAL ───────────────────────────────────")
         print(" [I]           : Painel de informações do planeta selecionado")
+        print(" [Saber Mais]  : Clique no botão do painel para o Guia sentar no planeta e falar!")
+        print(" [X]           : Fechar / Encerrar o Guia Virtual 3D")
         print(" [F1]          : Ecrã de ajuda e créditos completos")
         print("=" * 75 + "\n")
 
@@ -360,6 +371,15 @@ class SolarSimulatorApp:
                 dx = xpos - self.mouse_press_pos[0]
                 dy = ypos - self.mouse_press_pos[1]
                 if (dx * dx + dy * dy) < 25.0:
+                    # Verificar se clicou no botão "🔭 Saber Mais"
+                    if (
+                        self.ui_manager
+                        and self.ui_manager.show_info_panel
+                        and self.ui_manager.selected_body_data
+                    ):
+                        if self.ui_manager.is_learn_more_clicked(xpos, ypos):
+                            self._activate_guide_on_planet()
+                            return
                     self._perform_ray_picking(xpos, ypos)
         elif button == glfw.MOUSE_BUTTON_RIGHT:
             self.mouse_right_down = (action == glfw.PRESS)
@@ -602,6 +622,15 @@ class SolarSimulatorApp:
         elif key == glfw.KEY_I:
             self.ui_manager.toggle_info_panel()
 
+        # ── [X] Fechar o Guia Virtual ─────────────────────────────────────────
+        elif key == glfw.KEY_X:
+            if self.virtual_guide and self.guide_active:
+                self.virtual_guide.close()
+                self.guide_active = False
+                if self.ui_manager:
+                    self.ui_manager.show_info_panel = True
+                print("[Guia Virtual] Apresentação encerrada.")
+
         # ── [F1] Ajuda ────────────────────────────────────────────────────────
         elif key == glfw.KEY_F1:
             self.ui_manager.toggle_help()
@@ -621,6 +650,46 @@ class SolarSimulatorApp:
                 self.camera.distance = max(10.0, body.visual_radius * 5.5)
             self.camera._update_camera_vectors()
             print(f"[Seleção] Foco → {body.name} (Rastreamento ativo)")
+
+    def _activate_guide_on_planet(self) -> None:
+        """
+        Ativa o Guia Virtual sentado no topo do planeta selecionado.
+        Posiciona a câmara com visão privilegiada e inicia a narração científica.
+        """
+        if not self.selected_body_id or not self.virtual_guide:
+            return
+
+        body = self.solar_system.bodies.get(self.selected_body_id)
+        if not body:
+            return
+
+        planet_name = body.name
+        planet_id = self.selected_body_id
+
+        # Enquadra a câmara no topo do planeta
+        planet_pos = body.current_position
+        planet_radius = body.visual_radius
+
+        # Alvo aponta diretamente para o topo do planeta
+        self.camera.target = glm.vec3(planet_pos.x, planet_pos.y + planet_radius * 0.95, planet_pos.z)
+        if planet_id == "sun":
+            self.camera.distance = 45.0
+        else:
+            self.camera.distance = max(6.5, planet_radius * 3.0)
+        self.camera.pitch = 16.0
+        self.camera.yaw = 90.0
+        self.camera._update_camera_vectors()
+        self.camera_tracking = True
+
+        # Oculta o painel lateral para vista limpa
+        if self.ui_manager:
+            self.ui_manager.show_info_panel = False
+
+        # Inicia a apresentação com o personagem sentado
+        self.virtual_guide.open_on_planet(planet_name, planet_id)
+        self.guide_active = True
+
+        print(f"\n[Guia Virtual 3D] Sentado no topo de {planet_name.upper()} a falar sobre o planeta!")
 
     def _cycle_planet(self, reverse: bool = False) -> None:
         """Cicla para o próximo planeta ou anterior na ordem orbital natural."""
@@ -895,6 +964,10 @@ class SolarSimulatorApp:
             # Atualização da transição de escala
             self.scale_manager.update(delta_time)
 
+            # Atualização das animações, lip sync e voz do Guia Virtual 3D
+            if self.guide_active and self.virtual_guide:
+                self.virtual_guide.update(delta_time)
+
             # Rastreamento dinâmico da câmara: acompanha o planeta selecionado em sua órbita elíptica
             if (
                 self.selected_body_id
@@ -904,8 +977,12 @@ class SolarSimulatorApp:
             ):
                 if not (self.scale_manager and self.scale_manager.is_transitioning):
                     tracked_body = self.solar_system.bodies[self.selected_body_id]
-                    delta_move = tracked_body.current_position - self.camera.target
-                    self.camera.target = glm.vec3(tracked_body.current_position)
+                    if self.guide_active:
+                        target_spot = tracked_body.current_position + glm.vec3(0.0, tracked_body.visual_radius * 0.95, 0.0)
+                    else:
+                        target_spot = glm.vec3(tracked_body.current_position)
+                    delta_move = target_spot - self.camera.target
+                    self.camera.target = glm.vec3(target_spot)
                     self.camera.position += delta_move
 
             # 3. Limpeza do framebuffer
@@ -961,7 +1038,8 @@ class SolarSimulatorApp:
                     view_matrix,
                     projection_matrix,
                     self.camera,
-                    self.solar_system.bodies.get(self.selected_body_id or ""),
+                    # Com o Guia Virtual aberto ("Saber Mais"), o apresentador esconde-se
+                    None if self.guide_active else self.solar_system.bodies.get(self.selected_body_id or ""),
                     current_time,
                 )
 
@@ -998,7 +1076,24 @@ class SolarSimulatorApp:
             if self.show_meteors:
                 self.meteor_shower.draw(self.orbit_shader, view_matrix, projection_matrix)
 
-            # 12. Interface 2D — HUD + Painel de Informações
+            # 12. Guia Virtual 3D — Personagem sentado no topo do planeta selecionado
+            if (
+                self.guide_active
+                and self.virtual_guide
+                and self.selected_body_id
+                and self.selected_body_id in self.solar_system.bodies
+            ):
+                target_body = self.solar_system.bodies[self.selected_body_id]
+                self.virtual_guide.render_on_planet(
+                    view_mat=view_matrix,
+                    proj_mat=projection_matrix,
+                    cam_pos=camera_pos,
+                    planet_pos=target_body.current_position,
+                    planet_radius=target_body.visual_radius,
+                    axial_tilt_deg=target_body.data.get("axial_tilt_deg", 0.0),
+                )
+
+            # 13. Interface 2D — HUD + Painel de Informações + Legendas Pedagógicas
             if self.ui_manager:
                 self.ui_manager.draw(
                     is_paused=self.is_paused,
@@ -1018,10 +1113,16 @@ class SolarSimulatorApp:
                         "tracking": self.camera_tracking,
                         "camera_mode": self.camera_mode,
                         "black_hole_alert": self.current_black_hole_alert,
+                        "guide_info": {
+                            "planet_name": self.solar_system.bodies[self.selected_body_id].name if (self.selected_body_id and self.selected_body_id in self.solar_system.bodies) else "",
+                            "title": self.virtual_guide.controller.lesson_manager.current_section.title if self.virtual_guide else "",
+                            "text": self.virtual_guide.controller.lesson_manager.current_section.speech_text if self.virtual_guide else "",
+                            "is_playing": self.virtual_guide.controller.audio_player.is_playing() if self.virtual_guide else False,
+                        } if self.guide_active else None,
                     },
                 )
 
-            # 13. Apresentação do frame (Double Buffering)
+            # 14. Apresentação do frame (Double Buffering)
             glfw.swap_buffers(self.window)
             self._update_window_title(delta_time)
 
@@ -1031,6 +1132,8 @@ class SolarSimulatorApp:
         """Liberta recursos do OpenGL e encerra o GLFW."""
         if self.planet_characters:
             self.planet_characters.cleanup()
+        if self.virtual_guide:
+            self.virtual_guide.cleanup()
         glfw.destroy_window(self.window)
         glfw.terminate()
         print("[Simulador] Aplicação terminada com sucesso.")

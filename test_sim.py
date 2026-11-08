@@ -156,8 +156,34 @@ def test_phase1():
     satellite.draw(celestial_shader, view, proj, cam.position, glm.vec3(0.0), earth_pos)
     meteors.draw(orbit_shader, view, proj)
     ui_mgr.draw(is_paused=False, time_scale=10.0, simulated_days=10.0, fps=60.0, show_orbits=True)
+
+    # 9. Teste do Astronomical Virtual Guide 3D Sentado no Topo do Planeta
+    print("\n9. Teste do Astronomical Virtual Guide 3D sentado no topo do planeta...")
+    from guide.virtual_guide import AstronomicalVirtualGuide
+    virtual_guide = AstronomicalVirtualGuide(model_path=str(models_dir / "guide_remy.glb"))
+    virtual_guide.initialize_gl()
+    virtual_guide.open_on_planet("Terra", "earth")
+    virtual_guide.update(0.016)
+
+    # Teste de clique em "Saber Mais" na UI
+    btn_x = (ui_mgr.learn_more_btn_rect[0] + ui_mgr.learn_more_btn_rect[2]) / 2.0
+    btn_y = (ui_mgr.learn_more_btn_rect[1] + ui_mgr.learn_more_btn_rect[3]) / 2.0
+    assert ui_mgr.is_learn_more_clicked(btn_x, btn_y), "Deteção de clique no botão 'Saber Mais' deve funcionar!"
+    print("   [OK] Botão 'Saber Mais' validado e clicável!")
+
+    # Renderiza o personagem sentado no topo da Terra
+    virtual_guide.render_on_planet(
+        view_mat=view,
+        proj_mat=proj,
+        cam_pos=cam.position,
+        planet_pos=earth_pos,
+        planet_radius=solar_sys.bodies["earth"].visual_radius,
+        axial_tilt_deg=23.44,
+    )
+    print("   [OK] Guia Virtual 3D renderizado sentado no topo da Terra com sucesso!")
+
     glfw.swap_buffers(window)
-    print("   [OK] Frame cósmico total com Galáxia, Buracos Negros e Sistema Solar renderizado sem erros!")
+    print("   [OK] Frame cósmico total com Galáxia, Buracos Negros e Guia no Planeta renderizado sem erros!")
 
     glfw.destroy_window(window)
     glfw.terminate()

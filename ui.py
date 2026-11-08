@@ -76,6 +76,9 @@ class UIManager:
         self.show_help: bool = False
         self.show_info_panel: bool = True
 
+        # Coordenadas do botão "Saber Mais" em espaço de ecrã (x0, y0, x1, y1)
+        self.learn_more_btn_rect: tuple = (0, 0, 0, 0)
+
         # Textura do painel de informação lateral (360 x 520 px)
         self.panel_width = 380
         self.panel_height = 540
@@ -155,6 +158,15 @@ class UIManager:
         """Alterna o painel lateral de informações (Tecla I)."""
         self.show_info_panel = not self.show_info_panel
 
+    def is_learn_more_clicked(self, mouse_x: float, mouse_y: float) -> bool:
+        """Verifica se as coordenadas do rato estão dentro do botão 'Saber Mais'.
+
+        A origem (0,0) do GLFW é no canto superior esquerdo, igual ao Pillow,
+        pelo que as coordenadas são diretamente comparáveis.
+        """
+        x0, y0, x1, y1 = self.learn_more_btn_rect
+        return x0 <= mouse_x <= x1 and y0 <= mouse_y <= y1
+
     def draw(
         self,
         is_paused: bool,
@@ -183,6 +195,10 @@ class UIManager:
         # 4. Ecrã de Ajuda e Créditos (F1)
         if self.show_help:
             self._draw_help_screen(draw)
+
+        # 5. Caixa de Fala do Guia Virtual 3D (Subtítulos / Apresentação)
+        if active_modules and active_modules.get("guide_info"):
+            self._draw_guide_speech_box(draw, active_modules["guide_info"])
 
         # Envia a imagem composta do Pillow para a textura OpenGL
         img_data = overlay.tobytes()
@@ -440,8 +456,28 @@ class UIManager:
             for i, ln in enumerate(lines[:3]):
                 draw.text((x0 + 20, py + 28 + i * 14), ln, fill=(225, 225, 235), font=self.font_small)
 
-        # Dica de fecho
-        draw.text((x0 + 20, y1 - 25), "Dica: Clique noutro planeta ou prima [I] para fechar", fill=(100, 120, 150), font=self.font_small)
+        # Botão "🔭 Saber Mais" — abre o Guia Virtual 3D sobre o planeta selecionado
+        btn_w, btn_h = 180, 34
+        btn_x0 = x0 + (self.panel_width - btn_w) // 2
+        btn_y0 = y1 - btn_h - 12
+        btn_x1 = btn_x0 + btn_w
+        btn_y1 = btn_y0 + btn_h
+        draw.rounded_rectangle(
+            [btn_x0, btn_y0, btn_x1, btn_y1],
+            radius=8,
+            fill=(20, 60, 140, 240),
+            outline=(80, 160, 255, 255),
+            width=2,
+        )
+        draw.text(
+            (btn_x0 + btn_w // 2, btn_y0 + btn_h // 2),
+            "🔭 Saber Mais",
+            fill=(255, 255, 255),
+            font=self.font_text,
+            anchor="mm",
+        )
+        # Guardar coordenadas do botão em espaço de ecrã para deteção de clique
+        self.learn_more_btn_rect = (btn_x0, btn_y0, btn_x1, btn_y1)
 
     def _draw_help_screen(self, draw: ImageDraw.ImageDraw) -> None:
         """Desenha a janela central de Ajuda (F1) com todos os comandos e créditos."""
@@ -539,3 +575,50 @@ class UIManager:
         draw.line([(x0 + 25, cy), (x1 - 25, cy)], fill=(45, 75, 130), width=1)
         draw.text((x0 + 30, cy + 8), "Dados astronómicos reais: NASA Horizons, JPL, ESA, USGS Astrogeology.", fill=(130, 160, 200), font=self.font_small)
         draw.text((x0 + 30, cy + 23), "Prima [F1] para fechar este ecrã de ajuda.", fill=(180, 210, 255), font=self.font_small)
+
+    def _draw_guide_speech_box(self, draw: ImageDraw.ImageDraw, info: dict) -> None:
+        """Desenha uma elegante caixa de legendas/diálogo na parte inferior do ecrã."""
+        import textwrap
+
+        box_w = min(820, self.width - 60)
+        box_h = 130
+        x0 = (self.width - box_w) // 2
+        y0 = self.height - box_h - 18
+        x1 = x0 + box_w
+        y1 = y0 + box_h
+
+        # Fundo translúcido moderno sci-fi
+        draw.rounded_rectangle(
+            [x0, y0, x1, y1],
+            radius=12,
+            fill=(10, 16, 28, 240),
+            outline=(60, 160, 255, 255),
+            width=2,
+        )
+
+        # Cabeçalho do Guia
+        planet_name = info.get("planet_name", "Planeta")
+        title = info.get("title", "Apresentação Cósmica")
+        header_text = f"🎓 GUIA VIRTUAL 3D  |  {planet_name.upper()}  —  {title}"
+        draw.text((x0 + 18, y0 + 12), header_text, fill=(255, 215, 80), font=self.font_subtitle)
+        draw.line([(x0 + 18, y0 + 34), (x1 - 18, y0 + 34)], fill=(40, 75, 130), width=1)
+
+        # Texto falado pelo guia (com quebra de linha suave)
+        speech_text = info.get("text", "")
+        # Ajusta comprimento de linha conforme a largura da caixa
+        wrap_chars = max(50, int(box_w / 8.5))
+        wrapped_lines = textwrap.wrap(speech_text, width=wrap_chars)[:3]
+
+        text_y = y0 + 42
+        for line in wrapped_lines:
+            draw.text((x0 + 20, text_y), line, fill=(235, 240, 250), font=self.font_text)
+            text_y += 18
+
+        # Barra de rodapé com atalhos e estado
+        is_playing = info.get("is_playing", True)
+        status_str = "● A narrar..." if is_playing else "❚❚ Pausa"
+        status_col = (80, 240, 140) if is_playing else (255, 180, 50)
+        draw.text((x0 + 20, y1 - 22), status_str, fill=status_col, font=self.font_small)
+
+        controls_str = "[ENTER] Próxima Seção  |  [X] Fechar Guia  |  [I] Informações"
+        draw.text((x1 - 380, y1 - 22), controls_str, fill=(160, 190, 230), font=self.font_small)
