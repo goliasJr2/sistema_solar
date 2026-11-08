@@ -101,7 +101,7 @@ CELESTIAL_DATA = {
     },
     "earth": {
         "name": "Terra",
-        "model_file": "tierra_v1.1.glb",
+        "model_file": "planeta_tierra.glb",
         "radius_km": 6371.0,
         "visual_radius": 2.5,
         "real_radius_scale": 1.0,
