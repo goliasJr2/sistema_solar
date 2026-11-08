@@ -1,0 +1,283 @@
+{
+  "_comentario": "Personagem apresentador de cada planeta. Para trocar um personagem, ponha o modelo em Models/characters/ e altere 'model' (e os créditos): .npz = animado (gerado por tools/fbx_to_glb.py a partir de um FBX com esqueleto), .glb = estático. 'model': null deixa o planeta sem personagem (o narrador fala por ele). Depois de mudar textos, gere as vozes de novo: tools/gerar_vozes.py. Ver CHARACTERS.md e APRESENTACAO.md.",
+  "defaults": {
+    "height_factor": 1.4,
+    "side_offset": 2.1
+  },
+  "narrator": {
+    "name": "Narradora",
+    "voice": {
+      "name": "Helia",
+      "pitch": "0%",
+      "rate": 1.0
+    },
+    "lines": {
+      "welcome": "Bem-vindos ao Sistema Solar! Escolham um planeta com as teclas 1 a 8, ou carreguem em J para a visita guiada.",
+      "tour_intro": "Bem-vindos à visita guiada do Sistema Solar! Cada planeta tem o seu apresentador. Vamos começar por Mercúrio.",
+      "quiz_intro": "Hora do quiz! Responde com as teclas 1, 2 ou 3.",
+      "correct": "Correto!",
+      "wrong": "Quase! A resposta certa está a verde.",
+      "end": "Fim da visita! Obrigado por viajarem connosco."
+    }
+  },
+  "tour": {
+    "order": [
+      "mercury",
+      "venus",
+      "earth",
+      "mars",
+      "jupiter",
+      "saturn",
+      "uranus",
+      "neptune"
+    ],
+    "facts_per_planet": 3,
+    "quiz_questions": 3
+  },
+  "planets": {
+    "mercury": {
+      "character": "Ely",
+      "model": "Models/characters/ely.npz",
+      "tagline": "O mensageiro mais rápido: uma volta ao Sol em 88 dias.",
+      "source": "Mixamo (Adobe) — 'Ely by K.Atienza'; FBX original: Models/character (2).fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {
+        "name": "Daniel",
+        "pitch": "+5%",
+        "rate": 1.1
+      },
+      "intro": "Olá! Eu sou o Ely e apresento Mercúrio, o planeta mais próximo do Sol.",
+      "facts": [
+        "Mercúrio é o planeta mais pequeno do Sistema Solar, com 4879 quilómetros de diâmetro. É só um pouco maior do que a nossa Lua.",
+        "Está, em média, a 58 milhões de quilómetros do Sol e dá uma volta completa em apenas 88 dias. É o planeta mais rápido, a quase 48 quilómetros por segundo.",
+        "Quase não tem atmosfera para guardar o calor. Por isso, de dia a superfície chega aos 430 graus e de noite desce a menos 180.",
+        "Roda muito devagar: um dia solar, de um nascer do Sol ao seguinte, dura 176 dias terrestres. É o dobro do seu ano.",
+        "A superfície está coberta de crateras, como a da Lua. A maior, a bacia Caloris, tem cerca de 1550 quilómetros de diâmetro.",
+        "Apesar do calor, há gelo de água no fundo de crateras perto dos polos, onde a luz do Sol nunca chega. A sonda MESSENGER confirmou-o."
+      ],
+      "handoff": "Agora vamos até Vénus!",
+      "quiz": {
+        "question": "Quanto tempo demora Mercúrio a dar a volta ao Sol?",
+        "options": [
+          "88 dias",
+          "365 dias",
+          "12 anos"
+        ],
+        "answer": 0
+      }
+    },
+    "venus": {
+      "character": "Vanguard",
+      "model": "Models/characters/vanguard.npz",
+      "tagline": "Bem-vindo ao planeta mais quente: 464 °C à superfície.",
+      "source": "Mixamo (Adobe) — 'Vanguard By T. Choonyung'; FBX original: Models/character (1).fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {
+        "name": "Daniel",
+        "pitch": "-10%",
+        "rate": 0.95
+      },
+      "intro": "Saudações! Sou o Vanguard e guardo Vénus, o planeta mais quente do Sistema Solar.",
+      "facts": [
+        "Vénus tem quase o mesmo tamanho da Terra, com 12104 quilómetros de diâmetro. Por isso é chamado o planeta irmão da Terra.",
+        "A atmosfera é 96 por cento dióxido de carbono e tão densa que a pressão à superfície é 92 vezes a da Terra. É como estar a 900 metros de profundidade no oceano.",
+        "Esse ar espesso cria um efeito de estufa extremo: a superfície chega aos 464 graus. É mais quente do que Mercúrio, que está mais perto do Sol.",
+        "As nuvens são feitas de gotas de ácido sulfúrico e refletem tanta luz que Vénus é o objeto mais brilhante do céu noturno, depois da Lua.",
+        "Roda ao contrário da maioria dos planetas, por isso lá o Sol nasce a oeste. E roda tão devagar que um dia dura 243 dias terrestres, mais do que o seu ano de 225.",
+        "Tem milhares de vulcões. Em 1970, a sonda soviética Venera 7 foi a primeira a pousar noutro planeta, e transmitiu apenas 23 minutos antes de ser vencida pelo calor."
+      ],
+      "handoff": "Sigam agora para a Terra!",
+      "quiz": {
+        "question": "Porque é que Vénus é mais quente do que Mercúrio?",
+        "options": [
+          "Por causa do efeito de estufa",
+          "Porque está mais perto do Sol",
+          "Porque tem vulcões ativos"
+        ],
+        "answer": 0
+      }
+    },
+    "earth": {
+      "character": "Remy",
+      "model": "Models/characters/remy.npz",
+      "tagline": "A nossa casa — o único planeta conhecido com vida.",
+      "source": "Mixamo (Adobe) — 'Remy'; FBX original: Models/character.fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {
+        "name": "Daniel",
+        "pitch": "0%",
+        "rate": 1.0
+      },
+      "intro": "Olá! Eu sou o Remy. Bem-vindos à Terra, a nossa casa.",
+      "facts": [
+        "A Terra é o terceiro planeta a contar do Sol, a cerca de 150 milhões de quilómetros. A essa distância, a luz do Sol demora 8 minutos e 20 segundos a chegar até nós.",
+        "É o único planeta conhecido com água líquida à superfície: os oceanos cobrem cerca de 71 por cento do planeta.",
+        "A atmosfera tem 78 por cento de azoto e 21 por cento de oxigénio. A camada de ozono protege-nos da radiação ultravioleta do Sol.",
+        "O núcleo de ferro gera um campo magnético que desvia o vento solar. As auroras polares acontecem quando parte dessas partículas chega à atmosfera.",
+        "O eixo da Terra está inclinado 23,4 graus. É essa inclinação, e não a distância ao Sol, que causa as estações do ano.",
+        "A Lua estabiliza a inclinação da Terra e provoca as marés. E afasta-se de nós cerca de 3,8 centímetros por ano."
+      ],
+      "handoff": "Próxima paragem: Marte!",
+      "quiz": {
+        "question": "Que parte da superfície da Terra está coberta por oceanos?",
+        "options": [
+          "Cerca de 71%",
+          "Cerca de 30%",
+          "Cerca de 95%"
+        ],
+        "answer": 0
+      }
+    },
+    "mars": {
+      "character": "Maw",
+      "model": "Models/characters/maw.npz",
+      "tagline": "O planeta vermelho guarda o maior vulcão do sistema solar.",
+      "source": "Mixamo (Adobe) — 'Maw J Laygo'; FBX original: Models/character (3).fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {
+        "name": "Daniel",
+        "pitch": "-30%",
+        "rate": 0.85
+      },
+      "intro": "Sou o Maw, o guardião de Marte, o planeta vermelho.",
+      "facts": [
+        "Marte tem cerca de metade do diâmetro da Terra, 6779 quilómetros, e a gravidade é só 38 por cento da nossa.",
+        "É vermelho por causa do óxido de ferro, a ferrugem, que cobre as rochas e a poeira do seu solo.",
+        "Tem o Monte Olimpo, o maior vulcão do Sistema Solar, com cerca de 22 quilómetros de altura: quase duas vezes e meia o Evereste.",
+        "O Valles Marineris é um sistema de desfiladeiros com mais de 4000 quilómetros de comprimento, quase a largura dos Estados Unidos.",
+        "A atmosfera é muito fina e feita sobretudo de dióxido de carbono. Há tempestades de poeira que podem cobrir o planeta inteiro durante semanas.",
+        "Há gelo de água nos polos e debaixo do solo. Rovers como o Curiosity e o Perseverance procuram sinais de que Marte já teve vida."
+      ],
+      "handoff": "Agora, o gigante: Júpiter!",
+      "quiz": {
+        "question": "Porque é que Marte é vermelho?",
+        "options": [
+          "Ferrugem (óxido de ferro) no solo",
+          "Lava a arrefecer",
+          "Reflexo da luz do Sol"
+        ],
+        "answer": 0
+      }
+    },
+    "jupiter": {
+      "character": "Warrok",
+      "model": "Models/characters/warrok.npz",
+      "tagline": "O gigante: cabem aqui mais de 1300 Terras.",
+      "source": "Mixamo (Adobe) — 'Warrok W Kurniawan'; FBX original: Models/Warrok W Kurniawan.fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {
+        "name": "Daniel",
+        "pitch": "-35%",
+        "rate": 0.85
+      },
+      "intro": "Eu sou o Warrok! E este é Júpiter, o gigante do Sistema Solar.",
+      "facts": [
+        "Júpiter é o maior planeta: tem 11 vezes o diâmetro da Terra e duas vezes e meia a massa de todos os outros planetas juntos.",
+        "É um gigante gasoso, feito sobretudo de hidrogénio e hélio. Não tem uma superfície sólida onde se possa pousar.",
+        "A Grande Mancha Vermelha é uma tempestade maior do que a Terra, observada há pelo menos 150 anos.",
+        "Roda tão depressa que um dia dura menos de 10 horas. Essa rotação achata o planeta nos polos e estica as nuvens em faixas coloridas.",
+        "Tem 95 luas conhecidas. As quatro maiores, Io, Europa, Ganimedes e Calisto, foram descobertas por Galileu em 1610.",
+        "Ganimedes é a maior lua do Sistema Solar, maior até do que Mercúrio. E Europa esconde um oceano de água líquida debaixo do gelo."
+      ],
+      "handoff": "Vamos aos anéis de Saturno!",
+      "quiz": {
+        "question": "Quantas Terras caberiam dentro de Júpiter?",
+        "options": [
+          "Mais de 1300",
+          "Cerca de 10",
+          "Cerca de 100"
+        ],
+        "answer": 0
+      }
+    },
+    "saturn": {
+      "character": "Mutant",
+      "model": "Models/characters/mutant.npz",
+      "tagline": "Senhor dos anéis — feitos de gelo e rocha.",
+      "source": "Mixamo (Adobe) — 'Mutant'; FBX original: Models/Mutant.fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "side_offset": 2.9,
+      "voice": {
+        "name": "Daniel",
+        "pitch": "-25%",
+        "rate": 0.9
+      },
+      "intro": "Sou o Mutant, senhor de Saturno e dos seus anéis.",
+      "facts": [
+        "Saturno é o segundo maior planeta, com cerca de 9 vezes o diâmetro da Terra. Tal como Júpiter, é um gigante gasoso de hidrogénio e hélio.",
+        "Os anéis estendem-se por cerca de 280 mil quilómetros, mas em geral têm só uns 10 metros de espessura. São feitos de pedaços de gelo e rocha.",
+        "É o planeta menos denso: em média, é menos denso do que a água. Numa banheira gigante, Saturno flutuaria.",
+        "No polo norte há uma tempestade em forma de hexágono, e cada lado do hexágono é maior do que o diâmetro da Terra.",
+        "Titã, a maior lua de Saturno, tem uma atmosfera espessa e lagos de metano e etano líquidos à superfície.",
+        "Encélado lança jatos de água para o espaço, vindos de um oceano escondido debaixo do gelo. É um dos melhores lugares para procurar vida."
+      ],
+      "handoff": "Sigam para Úrano, o planeta deitado!",
+      "quiz": {
+        "question": "De que são feitos os anéis de Saturno?",
+        "options": [
+          "Gelo e rocha",
+          "Gás",
+          "Metal"
+        ],
+        "answer": 0
+      }
+    },
+    "uranus": {
+      "character": "Goblin",
+      "model": "Models/characters/goblin.npz",
+      "tagline": "Rodo deitado: o meu eixo está inclinado 98°.",
+      "source": "Mixamo (Adobe) — 'Goblin D Shareyko'; FBX original: Models/goblin_d_shareyko.fbx",
+      "license": "Termos de utilização Mixamo/Adobe",
+      "voice": {
+        "name": "Daniel",
+        "pitch": "+25%",
+        "rate": 1.1
+      },
+      "intro": "Sou o Goblin, e Úrano é o meu planeta deitado!",
+      "facts": [
+        "Úrano é um gigante de gelo, com cerca de 4 vezes o diâmetro da Terra. É feito sobretudo de água, metano e amoníaco gelados à volta de um núcleo rochoso.",
+        "Roda deitado: o eixo está inclinado cerca de 98 graus. Provavelmente foi atingido por um corpo enorme há milhares de milhões de anos.",
+        "Por estar deitado, cada polo tem 42 anos seguidos de luz do Sol e depois 42 anos de escuridão.",
+        "A cor azul-esverdeada vem do metano na atmosfera, que absorve a luz vermelha. É também o planeta com a atmosfera mais fria: até menos 224 graus.",
+        "Foi o primeiro planeta descoberto com um telescópio, por William Herschel, em 1781. Até então, só se conheciam os planetas visíveis a olho nu.",
+        "Tem 13 anéis escuros e 28 luas conhecidas, com nomes de personagens de Shakespeare e de Alexander Pope, como Titânia e Oberon."
+      ],
+      "handoff": "Por fim, Neptuno!",
+      "quiz": {
+        "question": "Qual é a inclinação do eixo de Úrano?",
+        "options": [
+          "Cerca de 98 graus",
+          "Cerca de 23 graus",
+          "Zero graus"
+        ],
+        "answer": 0
+      }
+    },
+    "neptune": {
+      "character": null,
+      "model": null,
+      "tagline": null,
+      "source": "Sem personagem — só existiam 7 no projeto. A narradora apresenta Neptuno. Ver CHARACTERS.md para adicionar um.",
+      "license": null,
+      "intro": "Neptuno ainda não tem apresentador, por isso apresento-o eu.",
+      "facts": [
+        "Neptuno é o planeta mais distante do Sol, a cerca de 4500 milhões de quilómetros. A luz do Sol demora mais de 4 horas a lá chegar.",
+        "É um gigante de gelo, um pouco mais pequeno do que Úrano mas com mais massa. A cor azul intensa vem do metano na atmosfera.",
+        "Tem os ventos mais fortes do Sistema Solar: mais de 2000 quilómetros por hora, mais rápidos do que o som na Terra.",
+        "Foi descoberto em 1846 graças à matemática: os cálculos de Urbain Le Verrier previram onde devia estar, antes de ser visto ao telescópio.",
+        "Uma volta ao Sol demora 165 anos terrestres. Desde que foi descoberto, completou apenas uma órbita, em 2011.",
+        "Tritão, a maior lua, orbita ao contrário da rotação de Neptuno e tem géiseres de azoto. A sonda Voyager 2 é a única que visitou Neptuno, em 1989."
+      ],
+      "handoff": null,
+      "quiz": {
+        "question": "Como foi descoberto Neptuno?",
+        "options": [
+          "Por cálculos matemáticos",
+          "Por acaso, numa fotografia",
+          "Por uma sonda espacial"
+        ],
+        "answer": 0
+      }
+    }
+  }
+}

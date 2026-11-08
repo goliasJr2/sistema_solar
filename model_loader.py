@@ -178,6 +178,8 @@ class GLBModel:
         if raw_radius <= 1e-5:
             raw_radius = 1.0
         self.base_radius = raw_radius
+        # Dimensões (x, y, z) do modelo já normalizado — usado p.ex. para escalar personagens pela altura
+        self.normalized_extents = extents / raw_radius
 
         # 2. Processa cada geometria e envia para o OpenGL
         for name, geom in geometries:

@@ -13,11 +13,19 @@ pip install -r requirements.txt
 ```
 *(Dependências: `PyOpenGL`, `glfw`, `Pillow`, `numpy`, `PyGLM`, `trimesh`)*
 
+Com um ambiente virtual (recomendado):
+```bash
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+> O som (vozes dos apresentadores, efeitos e ambiente) usa o `pygame-ce`, que se importa como `pygame` e tem versões pré-compiladas de Python 3.10 a 3.14. Se tiver o `pygame` "clássico" instalado, desinstale-o primeiro (`pip uninstall pygame`), porque os dois ocupam o mesmo nome. Sem placa de som, o simulador funciona na mesma, sem som.
+
 ### 2. Iniciar a Simulação
 Para iniciar o simulador completo:
 ```bash
 python main.py
 ```
+Ou com duplo clique em `run.bat` (Windows), que usa o `.venv` se existir e, caso contrário, o `python` do sistema.
 
 ---
 
@@ -89,6 +97,10 @@ python main.py
 |---|---|
 | **I** | Mostrar / Ocultar Painel de Dados Astronómicos Reais (NASA/JPL) |
 | **F1** | Mostrar / Ocultar Ecrã de Ajuda com todos os comandos |
+| **1–8 / TAB / Clique** | Além de focar o planeta, mostra o seu **personagem apresentador** ao lado dele, que fala sobre o planeta (ver [CHARACTERS.md](CHARACTERS.md)) |
+| **F** / Clique no personagem | Próximo facto do planeta |
+| **J** | Visita guiada por todos os planetas + quiz (ver [APRESENTACAO.md](APRESENTACAO.md)) |
+| **K** | Ligar / silenciar o som |
 
 ---
 
@@ -115,3 +127,15 @@ python main.py
    - **Captura de Corpos Celestes Reais**: Asteroides, cometas com cauda de plasma, meteoros incandescentes, satélites orbitais e foguetões lunares são atraídos em espirais ultra-rápidas para o centro das singularidades, sofrendo aceleração por conservação de momento angular e espargueteificação gravitacional antes de serem consumidos pelo horizonte de eventos.
    - **Sensação de Sucção e Distorção de Espaço-Tempo**: Ao entrar na área de atração do buraco negro/minhoca, a câmara é atraída progressivamente com aberração ótica relativística (o campo visual FOV deforma-se dinamicamente até 77° gerando a perceção de mergulho num túnel) acompanhado de tremores de maré gravitacional.
    - **Escape com a Tecla `[SHIFT]`**: O piloto pode a qualquer momento ligar os propulsores warp mantendo `[SHIFT]` premido para aplicar empuxo de escape em sentido oposto, rompendo a atração do buraco de minhoca e estabilizando a trajetória.
+9. **Personagens Apresentadores dos Planetas**:
+   - Cada planeta (Mercúrio a Úrano) tem um personagem 3D animado que aparece ao seu lado quando é selecionado: acena ao aparecer e depois fica em repouso (respiração, cabeça a olhar à volta). Nome e frase no painel de informação. Neptuno está vago.
+   - Os 7 personagens Mixamo que já estavam em `Models/` (`.fbx`) foram convertidos, com esqueleto e pesos de pele, para `.npz` em `Models/characters/` pela ferramenta `tools/fbx_to_glb.py`, já que o trimesh não lê FBX.
+   - Animação procedural com *skinning* na GPU: `character_rig.py` calcula a pose dos ossos a cada frame e `shaders/skinned.vert` deforma a malha.
+   - A tabela planeta → personagem está em `characters.json`: trocar um personagem não exige alterar código.
+   - Detalhes completos (origem dos modelos, licença, como adicionar novos): [CHARACTERS.md](CHARACTERS.md).
+10. **Apresentação com Voz, Visita Guiada e Quiz**:
+   - O apresentador que fala aparece num retrato (cabeça e ombros) no canto superior direito, com um balão de fala em letra grande ao lado; a cabeça (e a boca do Warrok) mexe-se ao ritmo da voz. Cada planeta tem 6 factos detalhados. `[F]` ou clique no retrato: facto seguinte.
+   - `[J]`: visita guiada por todos os planetas, com uma narradora, terminando num quiz (respostas com `[1] [2] [3]`). `[K]`: ligar/silenciar o som.
+   - Vozes geradas com as vozes do Windows e efeitos/ambiente sintetizados por código; o grupo pode substituir as vozes por gravações próprias sem mexer no código.
+   - Interface 2D com camadas em cache: o simulador passou de ~6 para ~22 FPS reais.
+   - Detalhes: [APRESENTACAO.md](APRESENTACAO.md).

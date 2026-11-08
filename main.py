@@ -45,6 +45,11 @@ GUIA COMPLETO DE CONTROLOS DE TECLADO:
   [0]               : Focar no Sistema Solar completo (vista padrão)
   [Clique]          : Selecionar planeta por Ray Picking 3D
 
+  ─────────────────── APRESENTADORES ──────────────────────────
+  [J]               : Visita guiada + quiz (respostas com 1/2/3)
+  [F] / [Clique no personagem] : Próximo facto do planeta
+  [K]               : Ligar / silenciar o som
+
   ──────────────── SIMULAÇÃO E TEMPO ───────────────────────────
   [ESPAÇO]          : Pausar / Retomar a simulação
   [R]               : Reinício completo (tempo=0, câmara=inicial)
@@ -119,6 +124,9 @@ from galaxy import SpiralGalaxy
 from satellites import EarthSatellite, LunarRocket
 from meteors import MeteorShower
 from scale_manager import ScaleManager, ScaleLevel
+from characters import PlanetCharacters
+from audio import AudioManager
+from presentation import Presentation
 from guide.virtual_guide import AstronomicalVirtualGuide
 
 
@@ -196,6 +204,9 @@ class SolarSimulatorApp:
         self.lunar_rocket: Optional[LunarRocket] = None
         self.meteor_shower: Optional[MeteorShower] = None
         self.scale_manager: Optional[ScaleManager] = None
+        self.planet_characters: Optional[PlanetCharacters] = None  # Personagem apresentador de cada planeta
+        self.audio: Optional[AudioManager] = None                  # Vozes, efeitos e ambiente
+        self.presentation: Optional[Presentation] = None           # Falas, visita guiada e quiz
 
         # ─── Guia Virtual 3D ───
         self.virtual_guide: Optional[AstronomicalVirtualGuide] = None
@@ -274,10 +285,19 @@ class SolarSimulatorApp:
         print("[Simulador] A carregar Sistema Solar (planetas, luas, texturas e modelos 3D)...")
         self.starfield = Starfield(num_stars=3500, radius=4000.0)
         self.solar_system = SolarSystem(textures_dir=TEXTURES_DIR, models_dir=MODELS_DIR)
+        self.planet_characters = PlanetCharacters(base_dir=BASE_DIR, shaders_dir=SHADERS_DIR)
+        self.audio = AudioManager(BASE_DIR / "sounds")
+        self.presentation = Presentation(
+            BASE_DIR / "characters.json", self.audio, self._tour_select,
+            planet_names={k: v["name"] for k, v in CELESTIAL_DATA.items()},
+        )
+        self.audio.start_ambient()
 
         print("[Simulador] A inicializar interface de utilizador (UI)...")
         self.ui_manager = UIManager(self.width, self.height, self.ui_shader)
         self.ui_manager.set_selected_body(CELESTIAL_DATA["earth"])
+        self.ui_manager.set_presenter(self.planet_characters.info_for("earth"))
+        self.presentation.welcome()   # a narradora explica como começar
 
         print("[Simulador] A instanciar módulos cósmicos (Galáxia, Buracos Negros, Asteroides, Cometa...)...")
         self.galaxy = SpiralGalaxy(models_dir=MODELS_DIR, num_stars=250000)
@@ -313,6 +333,10 @@ class SolarSimulatorApp:
         print(" [5] Júpiter   [6] Saturno  [7] Úrano     [8] Neptuno   [9] Sol")
         print(" [0]           : Focar no Sistema Solar completo (vista padrão)")
         print(" [Clique]      : Selecionar planeta por Ray Picking 3D")
+        print(" ─── APRESENTADORES ──────────────────────────────────────────────")
+        print(" [J]           : Visita guiada por todos os planetas + quiz (J de novo: sair)")
+        print(" [F] / Clique no personagem : Próximo facto do planeta")
+        print(" [K]           : Ligar / silenciar o som (vozes, efeitos, ambiente)")
         print(" ─── SIMULAÇÃO ───────────────────────────────────────────────────")
         print(" [ESPAÇO]      : Pausar / Retomar a simulação física")
         print(" [R]           : Reinício completo (Tempo=0, Câmara=padrão)")
@@ -386,6 +410,10 @@ class SolarSimulatorApp:
         ray_origin, ray_dir = RayPicker.get_ray_direction(
             mouse_x, mouse_y, self.width, self.height, view, proj
         )
+        # Clique no personagem apresentador: conta o facto seguinte
+        if self.planet_characters and self.planet_characters.hit_test_screen(mouse_x, mouse_y, self.width, self.height):
+            self.presentation.next_fact(self.selected_body_id)
+            return
         closest_body_id = None
         min_dist = float("inf")
         for b_id, body in self.solar_system.bodies.items():
@@ -424,6 +452,11 @@ class SolarSimulatorApp:
         Inclui câmara, planetas, módulos cósmicos, escalas e interface.
         """
         if action not in (glfw.PRESS,):
+            return
+
+        # ── Quiz da visita guiada: as teclas 1/2/3 respondem (em vez de selecionar planetas)
+        if self.presentation and self.presentation.quiz_waiting and key in (glfw.KEY_1, glfw.KEY_2, glfw.KEY_3):
+            self.presentation.answer({glfw.KEY_1: 0, glfw.KEY_2: 1, glfw.KEY_3: 2}[key])
             return
 
         # ── ESC: Voltar ao Sistema Solar ou Sair ──────────────────────────────
@@ -592,6 +625,8 @@ class SolarSimulatorApp:
             self.camera._update_camera_vectors()
             if self.ui_manager:
                 self.ui_manager.set_selected_body(None)
+            if self.presentation:
+                self.presentation.on_user_select(None)
             print("[Câmara] Vista do Sistema Solar completo.")
 
         # ── [1–9] Seleção direta de planetas ──────────────────────────────────
@@ -631,12 +666,30 @@ class SolarSimulatorApp:
         elif key == glfw.KEY_F1:
             self.ui_manager.toggle_help()
 
-    def _select_body_by_id(self, body_id: str) -> None:
-        """Seleciona um corpo celeste pelo ID, foca a câmara e atualiza o painel."""
+        # ── Apresentação dos planetas (presentation.py) ───────────────────────
+        elif key == glfw.KEY_J and not self.guide_active:   # Visita guiada (Jornada) + quiz
+            self.presentation.toggle_tour()
+        elif key == glfw.KEY_F and not self.guide_active:   # Próximo facto do apresentador
+            self.presentation.next_fact(self.selected_body_id)
+        elif key == glfw.KEY_K:   # Som ligado / silenciado
+            self.audio.toggle_mute()
+
+    def _tour_select(self, body_id: str) -> None:
+        """Seleção pedida pela visita guiada (não a interrompe)."""
+        self.camera_tracking = True
+        self._select_body_by_id(body_id, from_tour=True)
+
+    def _select_body_by_id(self, body_id: str, from_tour: bool = False) -> None:
+        """Seleciona um corpo celeste pelo ID, foca a câmara e atualiza o painel.
+        Uma seleção feita pelo utilizador (from_tour=False) termina a visita guiada
+        e põe o apresentador do planeta a falar."""
         if body_id in self.solar_system.bodies:
+            if not from_tour and self.presentation:
+                self.presentation.on_user_select(body_id)
             body = self.solar_system.bodies[body_id]
             self.selected_body_id = body_id
             self.ui_manager.set_selected_body(body.data)
+            self.ui_manager.set_presenter(self.planet_characters.info_for(body_id))
             # Foca suavemente no corpo selecionado com distância proporcional ao tamanho
             self.camera.target = glm.vec3(body.current_position)
             if body_id == "sun":
@@ -679,6 +732,10 @@ class SolarSimulatorApp:
         # Oculta o painel lateral para vista limpa
         if self.ui_manager:
             self.ui_manager.show_info_panel = False
+
+        # O apresentador e a visita guiada calam-se para não falarem por cima do Guia Virtual
+        if self.presentation:
+            self.presentation.stop_tour(announce=False)
 
         # Inicia a apresentação com o personagem sentado
         self.virtual_guide.open_on_planet(planet_name, planet_id)
@@ -1025,6 +1082,19 @@ class SolarSimulatorApp:
                 ring_shader=self.ring_shader,
             )
 
+            # 7b. Apresentador que está a falar (retrato no canto superior direito;
+            #     desenhado no passo 12b). As falas e gestos avançam mesmo em pausa.
+            #     Com o Guia Virtual aberto ("Saber Mais"), o retrato esconde-se.
+            if self.presentation:
+                self.presentation.update(delta_time)
+            if self.planet_characters and self.presentation:
+                speaker = None if self.guide_active else self.presentation.portrait_speaker()
+                self.planet_characters.update(
+                    delta_time, speaker,
+                    self.presentation.gestures_for(speaker),
+                    self.presentation.mouth(speaker),
+                )
+
             # 8. Cintura de Asteroides
             if self.show_asteroids:
                 self.asteroid_belt.draw(
@@ -1075,6 +1145,10 @@ class SolarSimulatorApp:
                     axial_tilt_deg=target_body.data.get("axial_tilt_deg", 0.0),
                 )
 
+            # 12b. Retrato do apresentador que está a falar (viewport próprio)
+            if self.planet_characters:
+                self.planet_characters.draw_portrait(self.celestial_shader, self.width, self.height, current_time)
+
             # 13. Interface 2D — HUD + Painel de Informações + Legendas Pedagógicas
             if self.ui_manager:
                 self.ui_manager.draw(
@@ -1102,6 +1176,9 @@ class SolarSimulatorApp:
                             "is_playing": self.virtual_guide.controller.audio_player.is_playing() if self.virtual_guide else False,
                         } if self.guide_active else None,
                     },
+                    speech=self._speech_for_ui(view_matrix, projection_matrix),
+                    presentation_status=self.presentation.status() if self.presentation else None,
+                    portrait=self._portrait_for_ui(),
                 )
 
             # 14. Apresentação do frame (Double Buffering)
@@ -1110,8 +1187,51 @@ class SolarSimulatorApp:
 
         self._cleanup()
 
+    def _portrait_for_ui(self) -> Optional[dict]:
+        """Moldura e nome do retrato do apresentador (desenhados pela UI)."""
+        pc = self.planet_characters
+        rect = pc.portrait_rect(self.width, self.height) if pc else None
+        return {"rect": rect, "name": pc.portrait_name()} if rect else None
+
+    def _speech_for_ui(self, view: glm.mat4, proj: glm.mat4) -> Optional[dict]:
+        """Balão de fala atual e onde o pôr:
+          - "portrait": ao lado do retrato do personagem que está a falar;
+          - "screen": por cima do planeta (planeta sem personagem, ex.: Neptuno);
+          - nenhum dos dois: narradora (balão em baixo, ao centro)."""
+        if not self.presentation:
+            return None
+        speech = self.presentation.bubble()
+        if not speech:
+            return None
+        speech["screen"] = None
+        speech["portrait"] = None
+        speaker = speech["speaker"]
+        pc = self.planet_characters
+        if pc and pc.info_for(speaker):
+            if speaker != pc._shown_id:
+                return None   # o retrato do personagem anterior ainda está a sair
+            speech["portrait"] = pc.portrait_rect(self.width, self.height)
+            if speech["portrait"] is None:
+                return None   # o retrato ainda está a entrar
+            return speech
+        anchor_world = None
+        if speaker == self.selected_body_id and speaker in self.solar_system.bodies:
+            body = self.solar_system.bodies[speaker]
+            anchor_world = body.current_position + glm.vec3(0.0, body.visual_radius * 1.1, 0.0)
+        if anchor_world is not None:
+            clip = proj * view * glm.vec4(anchor_world, 1.0)
+            if clip.w > 0.0:
+                ndc = glm.vec3(clip) / clip.w
+                if -1.2 < ndc.x < 1.2 and -1.2 < ndc.y < 1.2:
+                    speech["screen"] = ((ndc.x * 0.5 + 0.5) * self.width, (0.5 - ndc.y * 0.5) * self.height)
+        return speech
+
     def _cleanup(self) -> None:
         """Liberta recursos do OpenGL e encerra o GLFW."""
+        if self.planet_characters:
+            self.planet_characters.cleanup()
+        if self.audio:
+            self.audio.cleanup()
         if self.virtual_guide:
             self.virtual_guide.cleanup()
         glfw.destroy_window(self.window)
