@@ -271,7 +271,7 @@ class SolarSimulatorApp:
         print("[Simulador] A carregar Sistema Solar (planetas, luas, texturas e modelos 3D)...")
         self.starfield = Starfield(num_stars=3500, radius=4000.0)
         self.solar_system = SolarSystem(textures_dir=TEXTURES_DIR, models_dir=MODELS_DIR)
-        self.planet_characters = PlanetCharacters(base_dir=BASE_DIR)
+        self.planet_characters = PlanetCharacters(base_dir=BASE_DIR, shaders_dir=SHADERS_DIR)
 
         print("[Simulador] A inicializar interface de utilizador (UI)...")
         self.ui_manager = UIManager(self.width, self.height, self.ui_shader)

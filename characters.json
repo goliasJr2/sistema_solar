@@ -1,5 +1,5 @@
 {
-  "_comentario": "Personagem apresentador de cada planeta. Para trocar um personagem, ponha o .glb em Models/characters/ e altere 'model' (e os créditos). 'model': null deixa o planeta sem apresentador. Ver CHARACTERS.md.",
+  "_comentario": "Personagem apresentador de cada planeta. Para trocar um personagem, ponha o modelo em Models/characters/ e altere 'model' (e os créditos): .npz = animado (gerado por tools/fbx_to_glb.py a partir de um FBX com esqueleto), .glb = estático. 'model': null deixa o planeta sem apresentador. Ver CHARACTERS.md.",
   "defaults": {
     "height_factor": 1.4,
     "side_offset": 2.1
@@ -7,42 +7,42 @@
   "planets": {
     "mercury": {
       "character": "Ely",
-      "model": "Models/characters/ely.glb",
+      "model": "Models/characters/ely.npz",
       "tagline": "O mensageiro mais rápido: uma volta ao Sol em 88 dias.",
       "source": "Mixamo (Adobe) — 'Ely by K.Atienza'; FBX original: Models/character (2).fbx",
       "license": "Termos de utilização Mixamo/Adobe"
     },
     "venus": {
       "character": "Vanguard",
-      "model": "Models/characters/vanguard.glb",
+      "model": "Models/characters/vanguard.npz",
       "tagline": "Bem-vindo ao planeta mais quente: 464 °C à superfície.",
       "source": "Mixamo (Adobe) — 'Vanguard By T. Choonyung'; FBX original: Models/character (1).fbx",
       "license": "Termos de utilização Mixamo/Adobe"
     },
     "earth": {
       "character": "Remy",
-      "model": "Models/characters/remy.glb",
+      "model": "Models/characters/remy.npz",
       "tagline": "A nossa casa — o único planeta conhecido com vida.",
       "source": "Mixamo (Adobe) — 'Remy'; FBX original: Models/character.fbx",
       "license": "Termos de utilização Mixamo/Adobe"
     },
     "mars": {
       "character": "Maw",
-      "model": "Models/characters/maw.glb",
+      "model": "Models/characters/maw.npz",
       "tagline": "O planeta vermelho guarda o maior vulcão do sistema solar.",
       "source": "Mixamo (Adobe) — 'Maw J Laygo'; FBX original: Models/character (3).fbx",
       "license": "Termos de utilização Mixamo/Adobe"
     },
     "jupiter": {
       "character": "Warrok",
-      "model": "Models/characters/warrok.glb",
+      "model": "Models/characters/warrok.npz",
       "tagline": "O gigante: cabem aqui mais de 1300 Terras.",
       "source": "Mixamo (Adobe) — 'Warrok W Kurniawan'; FBX original: Models/Warrok W Kurniawan.fbx",
       "license": "Termos de utilização Mixamo/Adobe"
     },
     "saturn": {
       "character": "Mutant",
-      "model": "Models/characters/mutant.glb",
+      "model": "Models/characters/mutant.npz",
       "tagline": "Senhor dos anéis — feitos de gelo e rocha.",
       "source": "Mixamo (Adobe) — 'Mutant'; FBX original: Models/Mutant.fbx",
       "license": "Termos de utilização Mixamo/Adobe",
@@ -50,7 +50,7 @@
     },
     "uranus": {
       "character": "Goblin",
-      "model": "Models/characters/goblin.glb",
+      "model": "Models/characters/goblin.npz",
       "tagline": "Rodo deitado: o meu eixo está inclinado 98°.",
       "source": "Mixamo (Adobe) — 'Goblin D Shareyko'; FBX original: Models/goblin_d_shareyko.fbx",
       "license": "Termos de utilização Mixamo/Adobe"
