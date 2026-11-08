@@ -1,7 +1,8 @@
 # Personagens Apresentadores dos Planetas
 
-Cada planeta passa a ter um **personagem 3D** que aparece ao lado dele quando é
-selecionado. O personagem fica virado para a câmara e balança suavemente; o nome
+Cada planeta passa a ter um **personagem 3D animado** que aparece ao lado dele quando é
+selecionado. Ao aparecer, o personagem **acena** com o braço direito; depois fica em
+**repouso**, com respiração, cabeça a olhar à volta e um leve balanço do corpo. O nome
 e uma frase sobre o planeta aparecem no painel de informação (tecla **I**).
 
 ---
@@ -10,7 +11,7 @@ e uma frase sobre o planeta aparecem no painel de informação (tecla **I**).
 
 | Ação | Resultado |
 |---|---|
-| **1–8**, **TAB** / **SHIFT+TAB** ou **clique** num planeta | O personagem desse planeta aparece à direita do planeta (com uma pequena animação de entrada) |
+| **1–8**, **TAB** / **SHIFT+TAB** ou **clique** num planeta | O personagem desse planeta aparece à direita do planeta, acena durante ~3 s e passa para a animação de repouso |
 | **9** / **H** (Sol) ou **0** (vista geral) | Nenhum personagem é mostrado |
 | **I** | Mostra / oculta o painel; a secção **Apresentador** mostra o nome e a frase do personagem |
 
@@ -20,15 +21,15 @@ Não há teclas novas: o personagem segue a seleção de planetas que já existi
 
 ## Personagem de cada planeta
 
-| Planeta | Personagem | Modelo usado pelo simulador | FBX de origem (já existia em `Models/`) |
+| Planeta | Personagem | Ficheiro usado pelo simulador | FBX de origem (já existia em `Models/`) |
 |---|---|---|---|
-| Mercúrio | Ely | `Models/characters/ely.glb` | `Models/character (2).fbx` |
-| Vénus | Vanguard | `Models/characters/vanguard.glb` | `Models/character (1).fbx` |
-| Terra | Remy | `Models/characters/remy.glb` | `Models/character.fbx` |
-| Marte | Maw | `Models/characters/maw.glb` | `Models/character (3).fbx` |
-| Júpiter | Warrok | `Models/characters/warrok.glb` | `Models/Warrok W Kurniawan.fbx` |
-| Saturno | Mutant | `Models/characters/mutant.glb` | `Models/Mutant.fbx` |
-| Úrano | Goblin | `Models/characters/goblin.glb` | `Models/goblin_d_shareyko.fbx` |
+| Mercúrio | Ely | `Models/characters/ely.npz` | `Models/character (2).fbx` |
+| Vénus | Vanguard | `Models/characters/vanguard.npz` | `Models/character (1).fbx` |
+| Terra | Remy | `Models/characters/remy.npz` | `Models/character.fbx` |
+| Marte | Maw | `Models/characters/maw.npz` | `Models/character (3).fbx` |
+| Júpiter | Warrok | `Models/characters/warrok.npz` | `Models/Warrok W Kurniawan.fbx` |
+| Saturno | Mutant | `Models/characters/mutant.npz` | `Models/Mutant.fbx` |
+| Úrano | Goblin | `Models/characters/goblin.npz` | `Models/goblin_d_shareyko.fbx` |
 | Neptuno | — (vago) | — | Só existiam 7 personagens no projeto |
 
 A escolha foi feita pelo "feitio" de cada um: o humano casual (Remy) na Terra, o
@@ -51,6 +52,8 @@ quente, etc. Tudo isto é configurável — ver [Trocar ou adicionar um personag
   académicos e comerciais, segundo os termos da Adobe (ver as FAQ da Mixamo); o que não é permitido é
   redistribuí-los como ficheiros soltos (por exemplo, num pacote de modelos).
   Aqui são usados dentro do simulador, que é o caso previsto.
+- Os FBX **não traziam animações**. Todo o movimento é **procedural** (gerado no
+  código), por isso não foi preciso descarregar animações.
 
 ---
 
@@ -58,12 +61,15 @@ quente, etc. Tudo isto é configurável — ver [Trocar ou adicionar um personag
 
 | Ficheiro | Tipo | O que faz |
 |---|---|---|
-| `tools/fbx_to_glb.py` | **novo** | Converte os `.fbx` para `.glb` (ver abaixo) |
-| `Models/characters/*.glb` | **novo** | Os 7 personagens convertidos (1,6 a 6,4 MB cada; ~18 MB no total) |
+| `tools/fbx_to_glb.py` | **novo** | Converte `.fbx` para `.npz` (animado) ou `.glb` (estático) — ver abaixo |
+| `Models/characters/*.npz` | **novo** | Os 7 personagens convertidos, com esqueleto (0,5 a 2,2 MB cada; ~6 MB no total) |
+| `character_rig.py` | **novo** | Animação procedural do esqueleto (NumPy puro, sem OpenGL) |
+| `shaders/skinned.vert` | **novo** | Vertex shader de *skinning* (deforma a malha com as matrizes dos ossos) |
 | `characters.json` | **novo** | Tabela planeta → personagem (modelo, frase, créditos, ajustes) |
-| `characters.py` | **novo** | Classe `PlanetCharacters`: carrega e desenha o personagem do planeta selecionado |
+| `characters.py` | **novo** | Carrega e desenha o personagem do planeta selecionado (`.npz` animado ou `.glb` estático) |
 | `main.py` | alterado | Cria `PlanetCharacters`, desenha-o a seguir ao Sistema Solar (passo **7b** do ciclo) e envia os dados do personagem para a UI ao selecionar um planeta |
 | `ui.py` | alterado | Novo método `set_presenter()` e secção **Apresentador** no painel de informação |
+| `model_loader.py` | alterado | `GLBModel` guarda `normalized_extents` (dimensões do modelo normalizado), para escalar um personagem `.glb` pela sua altura |
 
 ### Porque é que foi preciso converter os FBX
 
@@ -79,28 +85,58 @@ O conversor:
    de cada polígono;
 3. Extrai a **textura difusa** de cada material — as imagens PNG vêm embutidas
    dentro do `.fbx` (nós `Video`), por isso não há ficheiros de textura soltos;
-4. Aplica a transformação local da malha, põe o personagem de pé (+Y), virado
-   para +Z, com altura 2,0 e centrado;
-5. Reduz as texturas a 1024 px no máximo (as originais têm até 4096 px) e grava o `.glb`.
+4. Extrai o **esqueleto**: os ossos (`Model` do tipo `LimbNode`), a hierarquia, a
+   matriz global de cada osso na pose de ligação (`Cluster.TransformLink`) e os
+   **pesos de pele** — para cada vértice, os 4 ossos com mais influência;
+5. Põe o personagem de pé (+Y), virado para +Z, com altura 2,0 e centrado
+   (a mesma transformação é aplicada à malha e aos ossos);
+6. Reduz as texturas a 1024 px no máximo (as originais têm até 4096 px) e grava o
+   `.npz` (arrays NumPy comprimidos: malhas, ossos, pesos e texturas em JPEG/PNG).
 
-O esqueleto e as animações são ignorados: o personagem fica na pose em T em que
-foi exportado.
+> **Nota técnica:** nos FBX da Mixamo, o campo `Cluster.Transform` **não** é a matriz
+> global da malha (como diz a documentação do FBX SDK), mas sim o inverso da matriz
+> do osso (`Transform · TransformLink = identidade`). Por isso os vértices são usados
+> no seu espaço próprio, que já coincide com o dos ossos.
 
-### Como o personagem é desenhado (`characters.py`)
+### Como funciona a animação
 
-- **Carregamento preguiçoso:** cada `.glb` só é lido na primeira vez que o seu planeta
-  é selecionado (pode haver uma pausa de ~1 s nessa primeira vez); depois fica em cache.
+A animação usa **skinning linear** (*Linear Blend Skinning*), a técnica padrão dos jogos:
+
+1. **No CPU, a cada frame** (`character_rig.py`, ~0,5 ms): para cada osso calcula-se a
+   pose atual por cinemática direta, `C_i = C_pai · L_i · Q_i`, onde `L_i` é a posição
+   local do osso na pose de ligação e `Q_i` a rotação animada. A matriz enviada à GPU
+   é `S_i = C_i · G_i⁻¹` (`G_i` = osso na pose de ligação), que é a identidade quando
+   o personagem está na pose original.
+2. **Na GPU** (`shaders/skinned.vert`): cada vértice mistura as matrizes dos seus 4
+   ossos, pesadas pelos pesos de pele, antes das transformações Model/View/Projection
+   habituais. A iluminação usa o `celestial.frag` existente.
+
+As rotações são definidas no espaço do personagem (por exemplo "baixar o braço na
+direção de −Y") e convertidas para o referencial de cada osso (`Q_i = R_iᵀ · R_mundo · R_i`).
+Os ossos são encontrados pelo nome Mixamo (`LeftArm`, `Head`, …), por isso **qualquer
+personagem com esqueleto Mixamo é animado automaticamente**.
+
+| Animação | O que mexe |
+|---|---|
+| **Repouso** | Braços descem da pose em T até ~20° do corpo, cotovelos ligeiramente dobrados para a frente; respiração (tronco); cabeça e pescoço olham à volta; balanço lento da anca |
+| **Aceno** | Ao aparecer: o braço direito sobe (~0,35 s), o antebraço acena (~2,4 s) e volta a baixar (~0,6 s), com transições suaves para o repouso |
+
+### Como o personagem é posicionado (`characters.py`)
+
+- **Carregamento preguiçoso:** cada modelo só é lido na primeira vez que o seu planeta
+  é selecionado; depois fica em cache.
 - **Posição:** `planeta + camera.right × (raio × side_offset)` — sempre à direita do
   planeta no ecrã, fora do painel de informação, que está à esquerda.
 - **Tamanho:** `altura = raio visual do planeta × height_factor`.
-- **Orientação:** rotação em Y para ficar de frente para a câmara, com balanço de ±12°
-  e uma leve flutuação vertical.
+- **Orientação:** rotação em Y para ficar de frente para a câmara e leve flutuação vertical.
 - **Entrada:** escala de 0 → 1 em 0,6 s com *easing* ao mudar de planeta.
-- **Iluminação:** usa o shader `celestial` já existente, mas com a luz junto à câmara
-  ("luz de estúdio") e ambiente mais forte, para o personagem nunca ficar às escuras
-  no lado noturno do planeta.
+- **Iluminação:** luz junto à câmara ("luz de estúdio") e ambiente mais forte, para o
+  personagem nunca ficar às escuras no lado noturno do planeta.
 - O *face culling* é desligado só durante o desenho do personagem (cabelo e roupa têm
   faces visíveis dos dois lados).
+- Se a placa gráfica não aceitar 128 matrizes de ossos no vertex shader (muito raro),
+  aparece um aviso no terminal e os personagens `.npz` não são mostrados; o resto do
+  simulador funciona normalmente.
 
 ---
 
@@ -108,29 +144,34 @@ foi exportado.
 
 Exemplo: pôr a Nami (One Piece) em Neptuno.
 
-1. **Arranjar o modelo** em `.glb` (por exemplo no [Sketchfab](https://sketchfab.com),
-   que exige conta para descarregar). **Verifique a licença**: personagens de anime
-   são propriedade dos seus autores, e muitos modelos feitos por fãs só permitem uso
-   não comercial. Registe o autor e a licença em `characters.json` (`source` / `license`).
-2. **Pôr o ficheiro** em `Models/characters/nami.glb`.
-   - Se o modelo vier em `.fbx` binário, converta-o:
+1. **Arranjar o modelo** (por exemplo no [Sketchfab](https://sketchfab.com), que exige
+   conta para descarregar). **Verifique a licença**: personagens de anime são
+   propriedade dos seus autores, e muitos modelos feitos por fãs só permitem uso não
+   comercial. Registe o autor e a licença em `characters.json` (`source` / `license`).
+2. **Para ficar animado**, o modelo precisa de um esqueleto Mixamo:
+   - Envie o modelo (`.fbx` ou `.obj`) para [mixamo.com](https://www.mixamo.com) → o
+     **auto-rigger** coloca o esqueleto automaticamente (marca-se queixo, pulsos,
+     cotovelos, joelhos e virilha);
+   - Descarregue em **FBX Binary**, **T-pose**, **sem animação** (*Download → Format: FBX Binary, Pose: T-pose*);
+   - Converta:
      ```bash
-     .venv\Scripts\python.exe tools\fbx_to_glb.py "Models\nami.fbx" "Models\characters\nami.glb" --preview
+     .venv\Scripts\python.exe tools\fbx_to_glb.py "Models\nami.fbx" "Models\characters\nami.npz" --preview
      ```
-     O `--preview` grava `nami.preview.png` ao lado, para confirmar que ficou de pé e com textura
-     (apague a imagem depois; não deve ir para o repositório).
-   - Se já vier em `.glb`, convém que esteja de pé (+Y) e virado para +Z.
-3. **Editar `characters.json`:**
+     O `--preview` grava `nami.preview.png` com três poses (ligação, repouso, aceno) para
+     confirmar que ficou bem — apague a imagem depois; não deve ir para o repositório.
+3. **Sem esqueleto** (estático): converta para `.glb` (`... "Models\characters\nami.glb"`)
+   ou use diretamente um `.glb` que esteja de pé (+Y) e virado para +Z.
+4. **Editar `characters.json`:**
    ```json
    "neptune": {
      "character": "Nami",
-     "model": "Models/characters/nami.glb",
+     "model": "Models/characters/nami.npz",
      "tagline": "Navegadora do planeta dos ventos mais fortes: 2100 km/h.",
-     "source": "Sketchfab — <autor> — <link>",
+     "source": "Sketchfab — <autor> — <link>; esqueleto: Mixamo auto-rigger",
      "license": "<licença do modelo>"
    }
    ```
-4. Correr o simulador e carregar em **8**.
+5. Correr o simulador e carregar em **8**.
 
 Ajustes opcionais por planeta em `characters.json`:
 
@@ -140,6 +181,9 @@ Ajustes opcionais por planeta em `characters.json`:
 | `side_offset` | 2.1 | Distância ao centro do planeta, para a direita (Saturno usa 2.9 por causa dos anéis) |
 
 Com `"model": null`, o planeta fica sem personagem.
+
+Para mudar os movimentos (ângulos, velocidades, novas animações), edite
+`ProceduralRig.pose_rotations()` em `character_rig.py` e confirme com `--preview`.
 
 ### Reconverter os 7 personagens Mixamo
 
@@ -152,8 +196,11 @@ A lista de ficheiros a converter está no dicionário `CHARACTERS` no início do
 
 ## Testes feitos
 
-- Conversão dos 7 FBX: todos com geometria e textura (verificado com as imagens `--preview`).
-- Simulador aberto e cada planeta (1–8) selecionado com capturas de ecrã: personagem
-  visível ao lado do planeta, com nome e frase no painel; Neptuno e Sol sem personagem.
-- FPS igual com e sem personagem no ecrã (o custo é de 11–35 mil triângulos).
+- Conversão dos 7 FBX: todos com geometria, textura e esqueleto (37 a 81 ossos).
+- Pré-visualização das três poses (`--preview`) para os 7: a pose de ligação é idêntica
+  ao modelo original, e no repouso e no aceno os braços mexem-se corretamente.
+- Simulador aberto: com cada planeta selecionado (1–8), o personagem certo aparece ao lado
+  do planeta, com nome e frase no painel; Neptuno e Sol ficam sem personagem. Capturas na Terra e em
+  Júpiter a 1,2 s e 2 s (aceno) e a 5 s (repouso).
+- Custo: ~0,5 ms por frame para calcular a pose (81 ossos); FPS igual com e sem personagem.
 - `test_sim.py` continua a passar.
