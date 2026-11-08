@@ -71,6 +71,7 @@ python main.py
 | **M** | **Chuva de Meteoros** | Alterna a tempestade de meteoros e bólides atmosféricos |
 | **▲ (Seta Cima)** | **Alerta & Descoberta Cósmica** | Ao sair do Sistema Solar (deixando o Sol para trás): segurar por 5s dispara o **Alerta de Perigo Espaço-Temporal**; continuar por mais 5s revela o **Buraco Negro** diretamente à sua frente |
 | **ALT** | **Frente a Frente Cósmico** | Teleporta a câmara e coloca-a imediatamente **Frente a Frente** com a singularidade (e cicla entre os 8 modelos 3D espalhados pelo espaço profundo) |
+| **SHIFT** | **Propulsão Warp de Fuga** | Quando apanhado no vórtice/buraco de minhoca gravitacional, aciona empuxo relativístico máximo para escapar da atração extrema |
 | **G** | **Buracos Negros** | Cicla o foco e inspeciona as 8 singularidades cósmicas |
 | **V** | **Galáxia Espiral** | Alterna a visualização da Via Láctea com 250.000 estrelas |
 
@@ -110,3 +111,7 @@ python main.py
    - Carregamento de todos os 8 modelos 3D de singularidades presentes em `Models/` (`black_hole.glb`, `black_hole_12.glb`, `black_hole_galaxy.glb`, `black_hole (1).glb`, `black_hole (2).glb`, `black_hole (3).glb`, `black_hole_12 (1).glb` e `not_a_black_hole_-_1.glb`), distribuídos em direções cósmicas esféricas a 360°.
    - Mecânica dinâmica de descoberta: ao sair do Sistema Solar e navegar com a seta para cima `[▲]` (ou `W`), 5 segundos acionam um alerta de perigo gravitacional no HUD; mais 5 segundos revelam e posicionam a singularidade primária à frente da sua trajetória.
    - Tecla `[ALT]`: teletransporte instantâneo para ficar frente a frente com o buraco negro, permitindo inspecionar o horizonte de eventos e ciclar entre todas as singularidades.
+8. **Simulação Física de Atração de Matéria e Efeito Buraco de Minhoca**:
+   - **Captura de Corpos Celestes Reais**: Asteroides, cometas com cauda de plasma, meteoros incandescentes, satélites orbitais e foguetões lunares são atraídos em espirais ultra-rápidas para o centro das singularidades, sofrendo aceleração por conservação de momento angular e espargueteificação gravitacional antes de serem consumidos pelo horizonte de eventos.
+   - **Sensação de Sucção e Distorção de Espaço-Tempo**: Ao entrar na área de atração do buraco negro/minhoca, a câmara é atraída progressivamente com aberração ótica relativística (o campo visual FOV deforma-se dinamicamente até 77° gerando a perceção de mergulho num túnel) acompanhado de tremores de maré gravitacional.
+   - **Escape com a Tecla `[SHIFT]`**: O piloto pode a qualquer momento ligar os propulsores warp mantendo `[SHIFT]` premido para aplicar empuxo de escape em sentido oposto, rompendo a atração do buraco de minhoca e estabilizando a trajetória.

@@ -318,6 +318,27 @@ class UIManager:
             sub_str = "Prima [ALT] agora para ficar Frente a Frente com o Buraco Negro!"
             draw.text((x0 + 18, y0 + 54), sub_str, fill=(255, 230, 150), font=self.font_small)
 
+        elif alert_type == "WORMHOLE_PULL":
+            bg_col = (45, 6, 25, 245)
+            border_col = (255, 30, 80, 255)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+            draw.text((x0 + 18, y0 + 10), "⚠ VÓRTICE DE ATRAÇÃO GRAVITACIONAL — BURACO DE MINHOCA!", fill=(255, 55, 100), font=self.font_subtitle)
+            grav_pct = int(alert.get("warp_factor", 0.5) * 100)
+            name_str = f"Singularidade: {alert.get('name', 'Buraco Negro')}  |  Gravidade Relativística: {grav_pct}%  |  Distância: {alert.get('distance', 0.0):.1f} UA"
+            draw.text((x0 + 18, y0 + 32), name_str, fill=(255, 230, 240), font=self.font_text)
+            sub_str = "🔥 MANTENHA PREMIDO [SHIFT] PARA ACIONAR A PROPULSÃO WARP DE FUGA!"
+            draw.text((x0 + 18, y0 + 54), sub_str, fill=(255, 220, 50), font=self.font_small)
+
+        elif alert_type == "WARP_ESCAPE":
+            bg_col = (8, 30, 48, 245)
+            border_col = (40, 220, 255, 255)
+            draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
+            draw.text((x0 + 18, y0 + 10), "⚡ PROPULSÃO WARP DE FUGA ATIVA [SHIFT]", fill=(50, 230, 255), font=self.font_subtitle)
+            name_str = f"A romper o horizonte de eventos de {alert.get('name', 'Buraco Negro')}!  |  Distância: {alert.get('distance', 0.0):.1f} UA"
+            draw.text((x0 + 18, y0 + 32), name_str, fill=(220, 250, 255), font=self.font_text)
+            sub_str = "Motores a impulsão máxima de escape relativístico contra o buraco de minhoca!"
+            draw.text((x0 + 18, y0 + 54), sub_str, fill=(160, 255, 200), font=self.font_small)
+
         elif alert_type == "OUTSIDE_CHARGING":
             box_height = 54
             y1 = y0 + box_height
@@ -464,6 +485,7 @@ class UIManager:
             ("[M]     ", "Ligar / Desligar chuva de meteoros e bólides"),
             ("[▲]     ", "Fora do Sist. Solar: Segurar 5s Alerta Perigo | +5s Revela Buraco Negro"),
             ("[ALT]   ", "Frente a Frente com o Buraco Negro (cicla entre as 8 singularidades)"),
+            ("[SHIFT] ", "Propulsão Warp de Fuga ao ser atraído pelo Buraco de Minhoca"),
             ("[G]     ", "Ciclar foco entre os 8 Buracos Negros cósmicos"),
             ("[V]     ", "Ligar / Desligar galáxia espiral Via Láctea"),
         ]

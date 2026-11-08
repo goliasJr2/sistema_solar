@@ -1,7 +1,9 @@
 """
 ===============================================================================
 Módulo: blackhole.py
-Descrição: Sistema Cósmico de Buracos Negros Relativísticos (8 Singularidades).
+Descrição: Sistema Cósmico de Buracos Negros Relativísticos (8 Singularidades)
+           com Simulação Física de Atração de Matéria (Asteroides, Cometas,
+           Meteoros e Satélites em Espiral de Acreção).
 Conceitos aplicados:
   - Modelagem e Renderização de Objetos Relativísticos com Modelos 3D:
       * black_hole.glb (Singularidade Estelar Primária: Cygnus X-1)
@@ -12,17 +14,22 @@ Conceitos aplicados:
       * black_hole (3).glb (M87* Progenitor: Horizonte das Sombras Cósmicas)
       * black_hole_12 (1).glb (Sagittarius B2: Gargantua Secundário Hiperdenso)
       * not_a_black_hole_-_1.glb (Anomalia Gravitacional Primordial Exótica)
-  - Distribuição Esférica Espacial em 8 Direções Cósmicas Distintas.
-  - Rotação Dinâmica dos Discos de Acreção a velocidades ultra-rápidas.
+  - Simulação de Atração Gravitacional e Espiral de Queda de Matéria:
+      * Asteroides (asteroid.glb, asteroid_01.glb, wandering_asteroids_of_andromeda.glb)
+      * Cometa interestelar com cauda de plasma (3iatlas_-_blue_kachina_comet_tribute.glb)
+      * Meteoros e bólides em desintegração térmica (boros_meteoric_burst.glb)
+      * Satélites orbitais e foguetões lunares capturados (satellite.glb, rocket_orbiting_moon.glb)
+      * Dinâmica de conservação de momento angular e espargueteificação gravitacional.
   - Alerta de Perigo Progressivo (5s) e Revelação de Singularidade (+5s).
   - Teletransporte e Enquadramento Frente a Frente com a tecla [ALT].
-  - Alternância entre Singularidades Cósmicas com a tecla [G] ou [ALT].
+  - Efeito de Sucção no Buraco de Minhoca e Propulsão Warp de Fuga com [SHIFT].
 ===============================================================================
 """
 
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict, Any
 import math
+import random
 import glm
 
 from model_loader import GLBModel
@@ -42,7 +49,7 @@ class BlackHole:
         accretion_rotation_speed: float = 35.0,
         warning_radius: float = 520.0,
         visible_radius: float = 420.0,
-        pull_radius: float = 160.0,
+        pull_radius: float = 190.0,
         light_color: Optional[glm.vec3] = None,
         ambient_color: Optional[glm.vec3] = None,
         description: str = "",
@@ -73,11 +80,7 @@ class BlackHole:
             print(f"[Buraco Negro Warning] Ficheiro {model_filename} não encontrado em {models_dir}")
 
     def is_visible_from(self, view_pos: glm.vec3) -> bool:
-        """
-        Determina a visibilidade cósmica:
-        - Se já foi revelado (após 10s ou tecla ALT), torna-se visível no espaço profundo.
-        - Caso contrário, só surge ao entrar no seu raio de aproximação direta.
-        """
+        """Determina a visibilidade cósmica da singularidade."""
         if self.is_revealed:
             return glm.length(self.position - view_pos) <= 6500.0
         return glm.length(self.position - view_pos) <= self.visible_radius
@@ -123,6 +126,212 @@ class BlackHole:
         self.model.draw()
 
 
+class InfallBody:
+    """
+    Representa um corpo celeste (asteroide, cometa, meteoro, satélite ou foguetão)
+    sendo inexoravelmente atraído pela gravidade extrema do buraco negro.
+    """
+
+    def __init__(
+        self,
+        model_key: str,
+        bh_index: int,
+        initial_radius: float,
+        initial_angle: float,
+        orbit_speed: float,
+        infall_speed: float,
+        scale: float,
+        tilt_deg: float,
+        height_offset: float,
+        rot_speeds: glm.vec3,
+        name: str,
+    ):
+        self.model_key = model_key
+        self.bh_index = bh_index
+        self.radius = initial_radius
+        self.angle = initial_angle
+        self.orbit_speed = orbit_speed
+        self.infall_speed = infall_speed
+        self.base_scale = scale
+        self.tilt_rad = math.radians(tilt_deg)
+        self.height_offset = height_offset
+        self.rot_speeds = rot_speeds
+        self.current_angles = glm.vec3(
+            random.uniform(0.0, 360.0),
+            random.uniform(0.0, 360.0),
+            random.uniform(0.0, 360.0),
+        )
+        self.current_pos = glm.vec3(0.0)
+        self.name = name
+        self.event_horizon_radius = 12.0
+
+    def update(self, delta_time: float, bh_pos: glm.vec3) -> None:
+        """
+        Atualiza a trajetória relativística em espiral de acreção:
+        - A velocidade orbital aumenta à medida que o raio diminui (Conservação de Momento Angular).
+        - A velocidade de queda radial acelera dramaticamente perto do horizonte de eventos.
+        - Se atingir o horizonte, é destruído e reaparece na borda externa do disco.
+        """
+        r_safe = max(8.0, self.radius)
+        speed_mult = (150.0 / r_safe) ** 1.25
+        infall_mult = (130.0 / r_safe) ** 1.45
+
+        self.angle += self.orbit_speed * speed_mult * delta_time
+        self.radius -= self.infall_speed * infall_mult * delta_time
+        self.current_angles += self.rot_speeds * (speed_mult * delta_time * 45.0)
+
+        # Cálculo da posição tridimensional em espiral de acreção
+        x = self.radius * math.cos(self.angle)
+        z = self.radius * math.sin(self.angle)
+        y = math.sin(self.angle * 2.2) * self.height_offset + z * math.sin(self.tilt_rad)
+
+        self.current_pos = bh_pos + glm.vec3(x, y, z)
+
+        # Se cruzar o horizonte de eventos (consumido pela singularidade)
+        if self.radius <= self.event_horizon_radius:
+            self.radius = random.uniform(190.0, 280.0)
+            self.angle = random.uniform(0.0, 2.0 * math.pi)
+            self.height_offset = random.uniform(-10.0, 10.0)
+            self.tilt_rad = math.radians(random.uniform(-22.0, 22.0))
+            self.infall_speed = random.uniform(7.0, 20.0)
+
+    def get_model_matrix(self) -> glm.mat4:
+        """
+        Gera a matriz Model com rotação caótica e espargueteificação gravitacional.
+        """
+        m = glm.mat4(1.0)
+        m = glm.translate(m, self.current_pos)
+        m = glm.rotate(m, math.radians(self.current_angles.x), glm.vec3(1.0, 0.0, 0.0))
+        m = glm.rotate(m, math.radians(self.current_angles.y), glm.vec3(0.0, 1.0, 0.0))
+        m = glm.rotate(m, math.radians(self.current_angles.z), glm.vec3(0.0, 0.0, 1.0))
+
+        # Espargueteificação gravitacional (alongamento tidal no sentido radial)
+        stretch = min(3.0, 1.0 + max(0.0, (45.0 - self.radius) / 14.0))
+        m = glm.scale(m, glm.vec3(self.base_scale, self.base_scale, self.base_scale * stretch))
+        return m
+
+
+class BlackHoleInfallSystem:
+    """
+    Gere a simulação de matéria cósmica capturada (asteroides, cometas, meteoros e satélites)
+    sendo atraída para o vórtice dos buracos negros.
+    """
+
+    def __init__(self, models_dir: Path, black_holes: List[BlackHole]):
+        self.models: Dict[str, GLBModel] = {}
+        self.bodies: List[InfallBody] = []
+
+        model_files = {
+            "asteroid_main": "asteroid.glb",
+            "asteroid_rock": "asteroid_01.glb",
+            "andromeda_cluster": "wandering_asteroids_of_andromeda.glb",
+            "asteroid_field": "asteroid_field_100_x_medium-poly.glb",
+            "comet": "3iatlas_-_blue_kachina_comet_tribute.glb",
+            "meteor": "boros_meteoric_burst.glb",
+            "satellite": "satellite.glb",
+            "rocket": "rocket_orbiting_moon.glb",
+        }
+
+        for key, fname in model_files.items():
+            fpath = models_dir / fname
+            if fpath.exists():
+                try:
+                    self.models[key] = GLBModel(fpath)
+                    print(f"[Matéria em Queda] Modelo carregado para atração: {fname}")
+                except Exception as e:
+                    print(f"[Matéria em Queda Warning] Erro ao carregar {fname}: {e}")
+
+        # População rica de matéria em queda gravitacional distribuída pelas singularidades
+        available_keys = list(self.models.keys())
+        if not available_keys:
+            return
+
+        descriptions = {
+            "asteroid_main": ("Asteroide Condrítico", 2.0),
+            "asteroid_rock": ("Asteroide Metálico", 1.8),
+            "andromeda_cluster": ("Fragmentos de Asteroide", 2.2),
+            "asteroid_field": ("Enxame de Detritos Espaciais", 2.5),
+            "comet": ("Cometa Interestelar em Queda", 3.2),
+            "meteor": ("Meteoro em Plasma Incandescente", 3.0),
+            "satellite": ("Satélite Orbital Descontrolado", 1.8),
+            "rocket": ("Foguetão Apollo Atraído", 2.4),
+        }
+
+        # Cria múltiplos corpos em órbita de atração para cada buraco negro
+        for bh_idx, bh in enumerate(black_holes):
+            # Singularidade primária (Cygnus X-1) e Gargantua recebem maior densidade de matéria
+            count = 10 if bh_idx in (0, 1) else 4
+            for _ in range(count):
+                chosen_key = random.choice(available_keys)
+                desc, base_sz = descriptions.get(chosen_key, ("Detrito Cósmico", 2.0))
+                sz = base_sz * random.uniform(0.75, 1.35)
+
+                body = InfallBody(
+                    model_key=chosen_key,
+                    bh_index=bh_idx,
+                    initial_radius=random.uniform(40.0, 240.0),
+                    initial_angle=random.uniform(0.0, 2.0 * math.pi),
+                    orbit_speed=random.uniform(0.35, 0.85),
+                    infall_speed=random.uniform(6.0, 18.0),
+                    scale=sz,
+                    tilt_deg=random.uniform(-20.0, 20.0),
+                    height_offset=random.uniform(-10.0, 10.0),
+                    rot_speeds=glm.vec3(
+                        random.uniform(0.5, 3.0),
+                        random.uniform(0.5, 3.0),
+                        random.uniform(0.5, 3.0),
+                    ),
+                    name=desc,
+                )
+                self.bodies.append(body)
+
+        print(f"[Matéria em Queda] {len(self.bodies)} corpos celestes em atração gravitacional gerados!")
+
+    def update(self, delta_time: float, black_holes: List[BlackHole]) -> None:
+        """Atualiza a posição de todos os asteroides, cometas, meteoros e satélites em atração."""
+        for body in self.bodies:
+            if 0 <= body.bh_index < len(black_holes):
+                bh = black_holes[body.bh_index]
+                body.update(delta_time, bh.position)
+
+    def draw(
+        self,
+        shader: Shader,
+        view: glm.mat4,
+        proj: glm.mat4,
+        view_pos: glm.vec3,
+        black_holes: List[BlackHole],
+    ) -> None:
+        """Renderiza os corpos atraídos que orbitam buracos negros visíveis."""
+        shader.use()
+        for body in self.bodies:
+            if 0 <= body.bh_index < len(black_holes):
+                bh = black_holes[body.bh_index]
+                if not bh.is_visible_from(view_pos):
+                    continue
+
+                mod = self.models.get(body.model_key)
+                if not mod:
+                    continue
+
+                model_matrix = body.get_model_matrix()
+                normal_matrix = glm.mat3(glm.transpose(glm.inverse(model_matrix)))
+
+                shader.set_mat4("uModel", model_matrix)
+                shader.set_mat4("uView", view)
+                shader.set_mat4("uProjection", proj)
+                shader.set_mat3("uNormalMatrix", normal_matrix)
+                shader.set_vec3("uLightPos", bh.position)
+                shader.set_vec3("uLightColor", bh.light_color)
+                shader.set_vec3("uViewPos", view_pos)
+                # Iluminação emissiva quente do disco de acreção
+                shader.set_vec3("uAmbientColor", glm.vec3(0.9, 0.6, 0.3))
+                shader.set_float("uShininess", 32.0)
+                shader.set_float("uSpecularStrength", 0.5)
+
+                mod.draw()
+
+
 class BlackHoleSystem:
     """Gere todas as 8 singularidades cósmicas espalhadas em diferentes direções cósmicas."""
 
@@ -145,7 +354,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=45.0,
             warning_radius=550.0,
             visible_radius=420.0,
-            pull_radius=150.0,
+            pull_radius=200.0,
             light_color=glm.vec3(1.0, 0.85, 0.5),
             ambient_color=glm.vec3(0.95, 0.6, 0.2),
             description="Singularidade primária de acreção ultra-rápida no vazio frontal.",
@@ -163,7 +372,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=30.0,
             warning_radius=550.0,
             visible_radius=450.0,
-            pull_radius=170.0,
+            pull_radius=210.0,
             light_color=glm.vec3(1.0, 0.7, 0.3),
             ambient_color=glm.vec3(0.85, 0.45, 0.15),
             description="Buraco negro massivo com disco de acreção incandescente e lente gravitacional.",
@@ -181,7 +390,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=25.0,
             warning_radius=700.0,
             visible_radius=550.0,
-            pull_radius=220.0,
+            pull_radius=250.0,
             light_color=glm.vec3(0.8, 0.7, 1.0),
             ambient_color=glm.vec3(0.7, 0.5, 0.95),
             description="Coração supermassivo galáctico no centro do aglomerado cósmico.",
@@ -199,7 +408,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=55.0,
             warning_radius=500.0,
             visible_radius=400.0,
-            pull_radius=140.0,
+            pull_radius=180.0,
             light_color=glm.vec3(0.5, 0.8, 1.0),
             ambient_color=glm.vec3(0.3, 0.6, 0.9),
             description="Microquasar dinâmico com emissão intensa em raios-X e jatos azuis relativísticos.",
@@ -217,7 +426,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=50.0,
             warning_radius=500.0,
             visible_radius=400.0,
-            pull_radius=140.0,
+            pull_radius=180.0,
             light_color=glm.vec3(1.0, 0.35, 0.3),
             ambient_color=glm.vec3(0.9, 0.25, 0.25),
             description="Singularidade escarlate com curvatura espaço-temporal extrema e plasma incandescente.",
@@ -235,7 +444,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=35.0,
             warning_radius=520.0,
             visible_radius=420.0,
-            pull_radius=160.0,
+            pull_radius=190.0,
             light_color=glm.vec3(1.0, 0.6, 0.2),
             ambient_color=glm.vec3(0.85, 0.5, 0.1),
             description="Gigante cósmico situado no plano superior do espaço profundo.",
@@ -253,7 +462,7 @@ class BlackHoleSystem:
             accretion_rotation_speed=32.0,
             warning_radius=540.0,
             visible_radius=420.0,
-            pull_radius=170.0,
+            pull_radius=200.0,
             light_color=glm.vec3(0.85, 0.4, 0.95),
             ambient_color=glm.vec3(0.7, 0.3, 0.85),
             description="Singularidade gémea hiperdensa com oscilações violeta no tecido do espaço-tempo.",
@@ -271,11 +480,14 @@ class BlackHoleSystem:
             accretion_rotation_speed=40.0,
             warning_radius=500.0,
             visible_radius=400.0,
-            pull_radius=150.0,
+            pull_radius=190.0,
             light_color=glm.vec3(0.4, 1.0, 0.8),
             ambient_color=glm.vec3(0.2, 0.85, 0.65),
             description="Anomalia misteriosa com distorção gravitacional quântica única.",
         ))
+
+        # Inicializa o subsistema de corpos celestes em atração gravitacional
+        self.infall_system = BlackHoleInfallSystem(models_dir, self.black_holes)
 
     def reveal_all(self) -> None:
         """Revela todas as singularidades no espaço exterior."""
@@ -305,9 +517,10 @@ class BlackHoleSystem:
         return min(self.black_holes, key=lambda bh: glm.length(bh.position - pos))
 
     def update(self, delta_time: float) -> None:
-        """Atualiza a rotação de todos os discos de acreção."""
+        """Atualiza a rotação dos discos de acreção e os corpos em atração de queda."""
         for bh in self.black_holes:
             bh.update(delta_time)
+        self.infall_system.update(delta_time, self.black_holes)
 
     def check_proximity(self, camera_pos: glm.vec3) -> Optional[Dict[str, Any]]:
         """
@@ -334,10 +547,11 @@ class BlackHoleSystem:
         return closest_info
 
     def draw(self, shader: Shader, view: glm.mat4, proj: glm.mat4, view_pos: glm.vec3) -> None:
-        """Renderiza todas as singularidades que se encontrem visíveis."""
+        """Renderiza todas as singularidades e a matéria em queda de acreção que se encontrem visíveis."""
         for bh in self.black_holes:
             if bh.is_visible_from(view_pos):
                 bh.draw(shader, view, proj, view_pos)
+        self.infall_system.draw(shader, view, proj, view_pos, self.black_holes)
 
     def cycle_next(self) -> BlackHole:
         """Alterna para o próximo buraco negro (Teclas G e ALT)."""

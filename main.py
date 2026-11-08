@@ -781,34 +781,101 @@ class SolarSimulatorApp:
             if self.black_hole_system:
                 dist_from_sun = glm.length(self.camera.position)
                 outside_solar = dist_from_sun >= 200.0
+                prox = self.black_hole_system.check_proximity(self.camera.position)
 
-                if self.bh_face_to_face and self.bh_face_to_face_timer > 0.0:
-                    self.current_black_hole_alert = {
-                        "type": "FACE_TO_FACE",
-                        "name": self.bh_face_to_face,
-                        "distance": self.camera.distance,
-                    }
-                elif self.bh_revealed and 10.0 <= self.bh_arrow_up_timer <= 18.0:
-                    pri_bh = self.black_hole_system.get_primary()
-                    pri_dist = glm.length(pri_bh.position - self.camera.position)
-                    self.current_black_hole_alert = {
-                        "type": "REVEALED",
-                        "name": pri_bh.name,
-                        "distance": pri_dist,
-                    }
-                elif self.bh_danger_alert_active and self.bh_arrow_up_timer < 10.0:
-                    self.current_black_hole_alert = {
-                        "type": "DANGER",
-                        "progress_sec": self.bh_arrow_up_timer - 5.0,
-                    }
-                elif outside_solar and 1.0 < self.bh_arrow_up_timer < 5.0:
-                    self.current_black_hole_alert = {
-                        "type": "OUTSIDE_CHARGING",
-                        "progress_sec": self.bh_arrow_up_timer,
-                    }
+                is_shift_pressed = (
+                    glfw.get_key(self.window, glfw.KEY_LEFT_SHIFT) == glfw.PRESS
+                    or glfw.get_key(self.window, glfw.KEY_RIGHT_SHIFT) == glfw.PRESS
+                )
+
+                # Zona de Sucção Gravitacional e Buraco de Minhoca
+                in_gravitational_trap = (
+                    prox is not None
+                    and prox["is_critical"]
+                    and not (self.bh_face_to_face and self.bh_face_to_face_timer > 3.0)
+                )
+
+                if in_gravitational_trap:
+                    bh_pos = prox["position"]
+                    pull_radius = prox["pull_radius"]
+                    dist = prox["distance"]
+                    pull_dir = glm.normalize(bh_pos - self.camera.position)
+                    warp_factor = max(0.0, min(1.0, 1.0 - (dist / pull_radius)))
+
+                    if is_shift_pressed:
+                        # ── PROPULSÃO WARP DE FUGA COM SHIFT ─────────────────
+                        # Motores a 100%: empuxo potente na direção oposta ao vórtice
+                        escape_dir = -pull_dir
+                        escape_speed = 190.0
+                        self.camera.position += escape_dir * (escape_speed * delta_time)
+                        self.camera.target += escape_dir * (escape_speed * delta_time)
+
+                        # O campo visual (FOV) regressa progressivamente a 45°
+                        self.camera.fov += (45.0 - self.camera.fov) * min(1.0, delta_time * 6.0)
+
+                        self.current_black_hole_alert = {
+                            "type": "WARP_ESCAPE",
+                            "name": prox["name"],
+                            "distance": dist,
+                        }
+                    else:
+                        # ── SUCÇÃO RELATIVÍSTICA DO BURACO DE MINHOCA ─────────
+                        # Atração gravitacional acelera exponencialmente em direção à singularidade
+                        pull_speed = 36.0 + warp_factor * 85.0
+                        self.camera.position += pull_dir * (pull_speed * delta_time)
+                        self.camera.target += pull_dir * (pull_speed * delta_time * 0.7)
+
+                        # Efeito visual de distorção de túnel (Wormhole Tunneling / Lente Gravitacional)
+                        target_fov = 45.0 + (warp_factor ** 1.3) * 32.0  # Expande até 77°!
+                        self.camera.fov += (target_fov - self.camera.fov) * min(1.0, delta_time * 4.0)
+
+                        # Turbulência e tremuras de maré espacial
+                        if warp_factor > 0.15:
+                            shake_intensity = (warp_factor - 0.15) * 1.4
+                            jitter = glm.vec3(
+                                random.uniform(-1.0, 1.0),
+                                random.uniform(-1.0, 1.0),
+                                random.uniform(-1.0, 1.0),
+                            ) * shake_intensity
+                            self.camera.position += jitter * (delta_time * 16.0)
+
+                        self.current_black_hole_alert = {
+                            "type": "WORMHOLE_PULL",
+                            "name": prox["name"],
+                            "distance": dist,
+                            "warp_factor": warp_factor,
+                            "pull_radius": pull_radius,
+                        }
                 else:
-                    prox = self.black_hole_system.check_proximity(self.camera.position)
-                    if prox:
+                    # Fora da zona crítica, o FOV recupera o ângulo de perspetiva padrão
+                    if abs(self.camera.fov - 45.0) > 0.1:
+                        self.camera.fov += (45.0 - self.camera.fov) * min(1.0, delta_time * 3.0)
+
+                    if self.bh_face_to_face and self.bh_face_to_face_timer > 0.0:
+                        self.current_black_hole_alert = {
+                            "type": "FACE_TO_FACE",
+                            "name": self.bh_face_to_face,
+                            "distance": self.camera.distance,
+                        }
+                    elif self.bh_revealed and 10.0 <= self.bh_arrow_up_timer <= 18.0:
+                        pri_bh = self.black_hole_system.get_primary()
+                        pri_dist = glm.length(pri_bh.position - self.camera.position)
+                        self.current_black_hole_alert = {
+                            "type": "REVEALED",
+                            "name": pri_bh.name,
+                            "distance": pri_dist,
+                        }
+                    elif self.bh_danger_alert_active and self.bh_arrow_up_timer < 10.0:
+                        self.current_black_hole_alert = {
+                            "type": "DANGER",
+                            "progress_sec": self.bh_arrow_up_timer - 5.0,
+                        }
+                    elif outside_solar and 1.0 < self.bh_arrow_up_timer < 5.0:
+                        self.current_black_hole_alert = {
+                            "type": "OUTSIDE_CHARGING",
+                            "progress_sec": self.bh_arrow_up_timer,
+                        }
+                    elif prox:
                         self.current_black_hole_alert = {
                             "type": "PROXIMITY",
                             "name": prox["name"],
@@ -819,19 +886,6 @@ class SolarSimulatorApp:
                         }
                     else:
                         self.current_black_hole_alert = None
-
-                # Atração gravitacional apenas se crítico e não estiver em vista face a face
-                if (
-                    self.current_black_hole_alert
-                    and self.current_black_hole_alert.get("type") == "PROXIMITY"
-                    and self.current_black_hole_alert.get("is_critical")
-                    and not self.bh_face_to_face
-                ):
-                    bh_pos = self.current_black_hole_alert["position"]
-                    pull_dir = glm.normalize(bh_pos - self.camera.position)
-                    pull_speed = 35.0 * (1.0 - (self.current_black_hole_alert["distance"] / self.current_black_hole_alert["pull_radius"]))
-                    self.camera.position += pull_dir * (pull_speed * delta_time)
-                    self.camera.target += pull_dir * (pull_speed * delta_time)
 
             # Atualização da transição de escala
             self.scale_manager.update(delta_time)
