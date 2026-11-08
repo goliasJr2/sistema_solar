@@ -18,7 +18,7 @@ Com um ambiente virtual (recomendado):
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
-> Em Python 3.13/3.14 o `pygame` não tem versão pré-compilada e a instalação falha. O código não usa `pygame`; nesse caso instale as restantes dependências e `pygame-ce` no lugar dele.
+> O som (vozes dos apresentadores, efeitos e ambiente) usa o `pygame-ce`, que se importa como `pygame` e tem versões pré-compiladas de Python 3.10 a 3.14. Se tiver o `pygame` "clássico" instalado, desinstale-o primeiro (`pip uninstall pygame`), porque os dois ocupam o mesmo nome. Sem placa de som, o simulador funciona na mesma, sem som.
 
 ### 2. Iniciar a Simulação
 Para iniciar o simulador completo:
@@ -97,7 +97,10 @@ Ou com duplo clique em `run.bat` (Windows), que usa o `.venv` se existir e, caso
 |---|---|
 | **I** | Mostrar / Ocultar Painel de Dados Astronómicos Reais (NASA/JPL) |
 | **F1** | Mostrar / Ocultar Ecrã de Ajuda com todos os comandos |
-| **1–8 / TAB / Clique** | Além de focar o planeta, mostra o seu **personagem apresentador** ao lado dele (ver [CHARACTERS.md](CHARACTERS.md)) |
+| **1–8 / TAB / Clique** | Além de focar o planeta, mostra o seu **personagem apresentador** ao lado dele, que fala sobre o planeta (ver [CHARACTERS.md](CHARACTERS.md)) |
+| **F** / Clique no personagem | Próximo facto do planeta |
+| **J** | Visita guiada por todos os planetas + quiz (ver [APRESENTACAO.md](APRESENTACAO.md)) |
+| **K** | Ligar / silenciar o som |
 
 ---
 
@@ -130,3 +133,9 @@ Ou com duplo clique em `run.bat` (Windows), que usa o `.venv` se existir e, caso
    - Animação procedural com *skinning* na GPU: `character_rig.py` calcula a pose dos ossos a cada frame e `shaders/skinned.vert` deforma a malha.
    - A tabela planeta → personagem está em `characters.json`: trocar um personagem não exige alterar código.
    - Detalhes completos (origem dos modelos, licença, como adicionar novos): [CHARACTERS.md](CHARACTERS.md).
+10. **Apresentação com Voz, Visita Guiada e Quiz**:
+   - Os apresentadores falam (voz + balão de fala com texto a aparecer ao ritmo da voz), apontam para o planeta ao contar factos e gesticulam enquanto falam. `[F]` ou clique no personagem: facto seguinte.
+   - `[J]`: visita guiada por todos os planetas, com uma narradora, terminando num quiz (respostas com `[1] [2] [3]`). `[K]`: ligar/silenciar o som.
+   - Vozes geradas com as vozes do Windows e efeitos/ambiente sintetizados por código; o grupo pode substituir as vozes por gravações próprias sem mexer no código.
+   - Interface 2D com camadas em cache: o simulador passou de ~6 para ~22 FPS reais.
+   - Detalhes: [APRESENTACAO.md](APRESENTACAO.md).

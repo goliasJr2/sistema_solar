@@ -73,6 +73,8 @@ class UIManager:
 
         self.selected_body_data: Optional[dict] = None
         self.presenter_data: Optional[dict] = None  # Personagem apresentador (characters.json)
+        self._layer_cache: dict = {}   # camadas da UI em cache (ver _paste_layer)
+        self._bubble_cache: dict = {}  # corpo do balão de fala em cache
         self.show_help: bool = False
         self.show_info_panel: bool = True
 
@@ -91,7 +93,11 @@ class UIManager:
             self.font_subtitle = ImageFont.truetype("arial.ttf", 15)
             self.font_text = ImageFont.truetype("arial.ttf", 13)
             self.font_small = ImageFont.truetype("arial.ttf", 11)
+            self.font_speech = ImageFont.truetype("arial.ttf", 15)
+            self.font_speech_name = ImageFont.truetype("arialbd.ttf", 13)
         except Exception:
+            self.font_speech = ImageFont.load_default()
+            self.font_speech_name = ImageFont.load_default()
             self.font_title = ImageFont.load_default()
             self.font_subtitle = ImageFont.load_default()
             self.font_text = ImageFont.load_default()
@@ -163,14 +169,28 @@ class UIManager:
         fps: float,
         show_orbits: bool,
         active_modules: Optional[dict] = None,
+        speech: Optional[dict] = None,
+        presentation_status: Optional[dict] = None,
     ) -> None:
-        """Desenha a interface gráfica completa sobreposta na tela."""
+        """Desenha a interface gráfica completa sobreposta na tela.
+        `speech`: balão de fala ({name, text, typing, screen: (x, y) ou None}).
+        `presentation_status`: faixa da visita guiada / painel do quiz (presentation.py)."""
         # Cria uma imagem Pillow transparente com as dimensões da janela
         overlay = Image.new("RGBA", (self.width, self.height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
 
-        # 1. Barra Superior (HUD)
-        self._draw_top_bar(draw, is_paused, time_scale, simulated_days, fps, show_orbits, active_modules)
+        # Desempenho: desenhar texto com o Pillow custa ~5 ms por chamada, por isso
+        # as partes que mudam pouco (barra superior, painel, apresentação) são
+        # desenhadas uma vez para uma "camada" em cache e só coladas nos frames
+        # seguintes; são redesenhadas apenas quando o seu conteúdo muda.
+
+        # 1. Barra Superior (HUD) — tudo em cache exceto o relógio da simulação
+        modules_key = tuple(sorted((k, str(v)) for k, v in (active_modules or {}).items()
+                                   if k != "black_hole_alert"))
+        bar_key = (self.width, is_paused, round(time_scale, 1), round(fps), show_orbits, modules_key)
+        self._paste_layer(overlay, "top_bar", bar_key, lambda d: self._draw_top_bar(
+            d, is_paused, time_scale, simulated_days, fps, show_orbits, active_modules, draw_time=False))
+        self._draw_top_bar_time(draw, simulated_days)
 
         # 2. Alerta de Entrada na Área de Atuação de Buraco Negro
         if active_modules and active_modules.get("black_hole_alert"):
@@ -178,7 +198,20 @@ class UIManager:
 
         # 3. Painel Lateral de Informações (Obrigatório 7)
         if self.show_info_panel and self.selected_body_data:
-            self._draw_planet_info_panel(draw)
+            panel_key = (id(self.selected_body_data), id(self.presenter_data))
+            self._paste_layer(overlay, "info_panel", panel_key, self._draw_planet_info_panel)
+
+        # 3b. Apresentação: em baixo e ao centro, empilhados — faixa da visita/quiz,
+        #     painel do quiz e (por cima) o balão da narradora. O balão de um
+        #     personagem fica junto à cabeça dele.
+        self._bottom_stack_top = self.height - 12
+        if presentation_status:
+            key = (self.width, self.height, repr(presentation_status))
+            self._paste_layer(overlay, "presentation", key,
+                              lambda d: self._draw_presentation_status(d, presentation_status))
+            self._bottom_stack_top = self._layer_cache["presentation"][3]
+        if speech:
+            self._draw_speech_bubble(overlay, draw, speech)
 
         # 4. Ecrã de Ajuda e Créditos (F1)
         if self.show_help:
@@ -224,6 +257,28 @@ class UIManager:
         glBindVertexArray(0)
         glEnable(GL_DEPTH_TEST)
 
+    def _paste_layer(self, overlay: Image.Image, name: str, key, painter) -> None:
+        """Camada em cache: `painter(draw)` desenha em coordenadas de ecrã numa imagem
+        transparente; guarda-se só o retângulo com conteúdo e cola-se no overlay.
+        Só volta a desenhar quando `key` muda."""
+        entry = self._layer_cache.get(name)
+        if entry is None or entry[0] != key:
+            canvas = Image.new("RGBA", (self.width, self.height), (0, 0, 0, 0))
+            saved_stack = getattr(self, "_bottom_stack_top", self.height - 12)
+            painter(ImageDraw.Draw(canvas))
+            bbox = canvas.getbbox()
+            img = canvas.crop(bbox) if bbox else None
+            entry = (key, img, (bbox[0], bbox[1]) if bbox else (0, 0), getattr(self, "_bottom_stack_top", saved_stack))
+            self._bottom_stack_top = saved_stack
+            self._layer_cache[name] = entry
+        if entry[1] is not None:
+            overlay.alpha_composite(entry[1], entry[2])
+
+    def _draw_top_bar_time(self, draw: ImageDraw.ImageDraw, simulated_days: float) -> None:
+        """Relógio da simulação (a única parte da barra superior que muda a cada frame)."""
+        years = simulated_days / 365.256
+        draw.text((180, 14), f"Tempo: {simulated_days:.1f}d ({years:.2f}a)", fill=(230, 235, 245), font=self.font_text)
+
     def _draw_top_bar(
         self,
         draw: ImageDraw.ImageDraw,
@@ -233,6 +288,7 @@ class UIManager:
         fps: float,
         show_orbits: bool,
         active_modules: Optional[dict] = None,
+        draw_time: bool = True,
     ) -> None:
         """Desenha a barra superior informativa com status, velocidade, data simulada e módulos."""
         # Fundo translúcido com gradiente escuro
@@ -244,10 +300,9 @@ class UIManager:
         status_color = (255, 90, 90) if is_paused else (80, 240, 140)
         draw.text((15, 12), f"● {status_text}", fill=status_color, font=self.font_subtitle)
 
-        # Data Simulada
-        years = simulated_days / 365.256
-        time_str = f"Tempo: {simulated_days:.1f}d ({years:.2f}a)"
-        draw.text((180, 14), time_str, fill=(230, 235, 245), font=self.font_text)
+        # Data Simulada (desenhada à parte por _draw_top_bar_time quando a barra está em cache)
+        if draw_time:
+            self._draw_top_bar_time(draw, simulated_days)
 
         # Velocidade Orbital
         vel_str = f"Vel: {time_scale:.1f}x [+/-]"
@@ -443,9 +498,150 @@ class UIManager:
         # Dica de fecho
         draw.text((x0 + 20, y1 - 25), "Dica: Clique noutro planeta ou prima [I] para fechar", fill=(100, 120, 150), font=self.font_small)
 
+    # ------------------------------------------------------------------ apresentação
+    def _wrap(self, draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> list:
+        """Quebra o texto em linhas que cabem em `max_width` píxeis."""
+        lines, line = [], ""
+        for word in text.split():
+            trial = f"{line} {word}".strip()
+            if draw.textlength(trial, font=font) > max_width and line:
+                lines.append(line)
+                line = word
+            else:
+                line = trial
+        if line:
+            lines.append(line)
+        return lines
+
+    BUBBLE_MAX_W = 340
+    BUBBLE_LINE_H = 19
+
+    def _bubble_body(self, name: str, text: str, visible: int, narrator: bool) -> Image.Image:
+        """Corpo do balão (fundo + nome + texto), em cache. O tamanho vem do texto
+        completo; o texto aparece palavra a palavra (efeito máquina de escrever)."""
+        if visible < len(text):
+            cut = text.rfind(" ", 0, visible)
+            if cut > 0:   # mostra só palavras completas (na 1.ª palavra, letra a letra)
+                visible = cut
+        key = (name, text, visible, narrator)
+        cached = self._bubble_cache.get("body")
+        if cached and cached[0] == key:
+            return cached[1]
+
+        layout = self._bubble_cache.get("layout")
+        if not layout or layout[0] != text:
+            tmp = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+            lines = self._wrap(tmp, text, self.font_speech, self.BUBBLE_MAX_W - 28) or [""]
+            w = min(self.BUBBLE_MAX_W, max(140, int(max(tmp.textlength(l, font=self.font_speech) for l in lines)) + 28))
+            layout = (text, lines, w)
+            self._bubble_cache["layout"] = layout
+        _, lines, w = layout
+        h = 34 + self.BUBBLE_LINE_H * len(lines) + 8
+
+        if narrator:
+            fill, outline, name_col, text_col = (14, 22, 40, 235), (120, 190, 255, 255), (120, 200, 255), (235, 240, 250)
+        else:
+            fill, outline, name_col, text_col = (250, 248, 240, 240), (255, 200, 90, 255), (190, 110, 20), (25, 28, 40)
+        img = Image.new("RGBA", (w + 1, h + 1), (0, 0, 0, 0))
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle([0, 0, w, h], radius=14, fill=fill, outline=outline, width=2)
+        d.text((14, 10), name, fill=name_col, font=self.font_speech_name)
+        remaining = visible
+        for i, l in enumerate(lines):
+            if remaining <= 0:
+                break
+            shown = l[:remaining]
+            remaining -= len(l) + 1
+            d.text((14, 30 + i * self.BUBBLE_LINE_H), shown + (" ▌" if remaining < 0 and visible < len(text) else ""),
+                   fill=text_col, font=self.font_speech)
+        self._bubble_cache["body"] = (key, img, fill, outline)
+        return img
+
+    def _draw_speech_bubble(self, overlay: Image.Image, draw: ImageDraw.ImageDraw, speech: dict) -> None:
+        """Balão de fala junto à cabeça do personagem (ou em baixo, para a narradora)."""
+        anchor = speech.get("screen")
+        text = speech.get("text", "")
+        body = self._bubble_body(speech.get("name", ""), text, int(speech.get("visible", len(text))), anchor is None)
+        _, _, fill, outline = self._bubble_cache["body"]
+        w, h = body.width - 1, body.height - 1
+
+        if anchor is not None:
+            ax, ay = anchor
+            x0 = int(min(max(ax - w * 0.3, 10), self.width - w - 10))
+            y0 = int(max(self.hud_height + 50, ay - h - 26))
+            y0 = min(y0, self.height - h - 10)
+        else:
+            x0 = (self.width - w) // 2
+            y0 = int(getattr(self, "_bottom_stack_top", self.height - 12) - h - 10)
+        overlay.alpha_composite(body, (x0, y0))
+
+        if anchor is not None:
+            # "Cauda" do balão a apontar para a cabeça do personagem (segue-o a cada frame)
+            x1, y1 = x0 + w, y0 + h
+            tx = int(min(max(anchor[0], x0 + 24), x1 - 24))
+            tip = (int(anchor[0]), int(min(anchor[1] - 6, y1 + 22)))
+            draw.polygon([(tx - 10, y1 - 2), (tx + 10, y1 - 2), tip], fill=fill)
+            draw.line([(tx - 10, y1), tip, (tx + 10, y1)], fill=outline, width=2)
+
+    def _draw_presentation_status(self, draw: ImageDraw.ImageDraw, status: dict) -> None:
+        """Faixa da visita guiada/quiz por baixo da barra superior e painel do quiz."""
+        banner = status.get("banner")
+        if banner:
+            tw = int(draw.textlength(banner, font=self.font_subtitle))
+            bx0 = (self.width - tw) // 2 - 16
+            by1 = self._bottom_stack_top
+            draw.rounded_rectangle([bx0, by1 - 28, bx0 + tw + 32, by1], radius=10,
+                                   fill=(40, 25, 70, 225), outline=(190, 140, 255, 255), width=2)
+            draw.text((bx0 + 16, by1 - 23), banner, fill=(240, 225, 255), font=self.font_subtitle)
+            self._bottom_stack_top = by1 - 28 - 8
+
+        quiz = status.get("quiz")
+        if not quiz:
+            return
+        w = 600
+        x0 = (self.width - w) // 2
+        if quiz.get("final"):
+            h = 90
+            y0 = self._bottom_stack_top - h
+            self._bottom_stack_top = y0 - 8
+            draw.rounded_rectangle([x0, y0, x0 + w, y0 + h], radius=14, fill=(14, 22, 40, 240),
+                                   outline=(255, 200, 90, 255), width=2)
+            msg = f"Acertaste {quiz['score']} de {quiz['total']}!"
+            draw.text((x0 + (w - draw.textlength(msg, font=self.font_title)) // 2, y0 + 20), msg,
+                      fill=(255, 215, 80), font=self.font_title)
+            sub = "Obrigado por viajarem connosco."
+            draw.text((x0 + (w - draw.textlength(sub, font=self.font_text)) // 2, y0 + 56), sub,
+                      fill=(200, 210, 230), font=self.font_text)
+            return
+
+        q_lines = self._wrap(draw, quiz["question"], self.font_subtitle, w - 40)
+        h = 30 + 20 * len(q_lines) + 38 * len(quiz["options"]) + 34
+        y0 = self._bottom_stack_top - h
+        self._bottom_stack_top = y0 - 8
+        draw.rounded_rectangle([x0, y0, x0 + w, y0 + h], radius=14, fill=(14, 22, 40, 240),
+                               outline=(190, 140, 255, 255), width=2)
+        cy = y0 + 16
+        for l in q_lines:
+            draw.text((x0 + 20, cy), l, fill=(255, 255, 255), font=self.font_subtitle)
+            cy += 20
+        cy += 8
+        for i, opt in enumerate(quiz["options"]):
+            fill, outline, col = (28, 38, 64, 255), (60, 80, 120, 255), (230, 235, 245)
+            if quiz.get("answer") is not None:
+                if i == quiz["answer"]:
+                    fill, outline, col = (30, 110, 60, 255), (90, 230, 140, 255), (255, 255, 255)
+                elif i == quiz.get("chosen"):
+                    fill, outline, col = (120, 35, 40, 255), (255, 110, 110, 255), (255, 255, 255)
+            draw.rounded_rectangle([x0 + 18, cy, x0 + w - 18, cy + 30], radius=8, fill=fill, outline=outline, width=2)
+            draw.text((x0 + 30, cy + 7), f"[{i + 1}]", fill=(255, 215, 80), font=self.font_text)
+            draw.text((x0 + 66, cy + 7), opt, fill=col, font=self.font_text)
+            cy += 38
+        hint = "Responde com as teclas [1] [2] [3]" if quiz.get("waiting") else ""
+        draw.text((x0 + 20, cy + 4), hint, fill=(160, 170, 200), font=self.font_small)
+
     def _draw_help_screen(self, draw: ImageDraw.ImageDraw) -> None:
         """Desenha a janela central de Ajuda (F1) com todos os comandos e créditos."""
-        w, h = 740, 600
+        w, h = 740, 618
         x0 = (self.width - w) // 2
         y0 = (self.height - h) // 2
         x1, y1 = x0 + w, y0 + h
@@ -488,6 +684,7 @@ class UIManager:
             ("[0]                     ", "Vista completa do Sistema Solar"),
             ("[TAB / Shift+TAB]       ", "Ciclar para o próximo planeta / anterior"),
             ("[Clique no Planeta]     ", "Selecionar por Ray Picking 3D"),
+            ("[J] Visita guiada + quiz   [F] / Clique no personagem: próximo facto   [K] Som", ""),
         ]
         for key, desc in planet_cmds:
             draw.text((x0 + 30, cy), key, fill=(255, 230, 130), font=self.font_small)
