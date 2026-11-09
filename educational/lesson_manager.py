@@ -108,8 +108,10 @@ class LessonManager:
         self.is_paused = False
         self.is_finished = False
 
-    def set_planet(self, planet_id: str) -> None:
+    def set_planet(self, planet_id: str, section_index: int = 0) -> None:
         """Recarrega as secções de lição para o planeta indicado e reinicia o estado."""
         self.target_planet = planet_id
         self.sections = PLANET_LESSONS.get(planet_id.lower(), EARTH_LESSON_SECTIONS)
         self.reset()
+        if 0 <= section_index < len(self.sections):
+            self.current_index = section_index

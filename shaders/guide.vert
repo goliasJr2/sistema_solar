@@ -59,16 +59,16 @@ void main()
 
     // ─── 2. ANIMAÇÃO FACIAL: LIP SYNC E MANDÍBULA NO BODY ─────────────────
     if (uMeshType == 0) {
-        // Na submesh Body, a boca e o queixo situam-se em Y entre 332.0 e 345.0, Z > 10.0
-        // e X entre -14.0 e 14.0
-        if (pos.y > 328.0 && pos.y < 345.0 && pos.z > 10.0 && abs(pos.x) < 16.0) {
+        // Altura labial adaptativa calculada a partir do pivô da cabeça (uHeadPivot)
+        float mouthCenterY = uHeadPivot.y + 13.0;
+        if (pos.y > (mouthCenterY - 10.0) && pos.y < (mouthCenterY + 7.0) && pos.z > 8.0 && abs(pos.x) < 22.0) {
             // Fator de proximidade ao centro labial
-            float distToMouth = length(vec3(pos.x * 1.5, pos.y - 338.0, (pos.z - 18.0) * 0.8));
-            float mouthWeight = clamp(1.0 - distToMouth / 14.0, 0.0, 1.0);
+            float distToMouth = length(vec3(pos.x * 1.5, pos.y - mouthCenterY, (pos.z - (uHeadPivot.z + 15.0)) * 0.8));
+            float mouthWeight = clamp(1.0 - distToMouth / 16.0, 0.0, 1.0);
             mouthWeight = mouthWeight * mouthWeight * (3.0 - 2.0 * mouthWeight); // Smoothstep
 
             // Descida do lábio inferior e mandíbula
-            if (pos.y < 339.0) {
+            if (pos.y < mouthCenterY + 1.0) {
                 pos.y -= uJawDrop * 3.8 * mouthWeight;
                 pos.z += uMouthOpen * 0.8 * mouthWeight;
             } else {
@@ -85,9 +85,9 @@ void main()
     }
 
     // ─── 3. ANIMAÇÃO ESQUELÉTICA: CABEÇA E PESCOÇO ─────────────────────────
-    // Aplica-se à cabeça: Hair (3), Eyes (1), Eyelashes (2) e parte superior do Body (Y > 324.0)
+    // Aplica-se à cabeça: Hair (3), Eyes (1), Eyelashes (2) e parte superior do corpo acima do pescoço
     bool isHeadPart = (uMeshType == 1 || uMeshType == 2 || uMeshType == 3) ||
-                      (uMeshType == 0 && pos.y >= 324.0);
+                      (uMeshType == 0 && pos.y >= (uHeadPivot.y - 2.0));
 
     if (isHeadPart) {
         vec3 localHead = pos - uHeadPivot;

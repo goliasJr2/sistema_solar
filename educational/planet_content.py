@@ -16,60 +16,70 @@ PRESENTERS_CONFIG: Dict[str, dict] = {
         "title": "Guia Astronómica Terrestre",
         "badge": "👩‍🚀 TRACY",
         "role": "Apresentadora do Lar Cósmico",
+        "character": "remy",
     },
     "mercury": {
         "name": "Tracy",
         "title": "Apresentadora do Mensageiro Veloz",
         "badge": "👩‍🚀 TRACY",
         "role": "Especialista em Planetas Interiores",
+        "character": "remy",
     },
     "venus": {
         "name": "Tracy",
         "title": "Apresentadora de Mundos Extremos",
         "badge": "👩‍🚀 TRACY",
         "role": "Investigadora da Atmosfera de Vénus",
+        "character": "remy",
     },
     "mars": {
-        "name": "Kayden",
+        "name": "Goblin Kayden",
         "title": "Explorador Marciano",
-        "badge": "🚀 KAYDEN",
+        "badge": "👺 GOBLIN KAYDEN",
         "role": "Desbravador do Planeta Vermelho",
+        "character": "goblin",
     },
     "uranus": {
-        "name": "Kayden",
+        "name": "Goblin Kayden",
         "title": "Explorador de Gigantes de Gelo",
-        "badge": "🚀 KAYDEN",
+        "badge": "👺 GOBLIN KAYDEN",
         "role": "Investigador de Mundos Inclinados",
+        "character": "goblin",
     },
     "jupiter": {
-        "name": "Travor",
+        "name": "Mutante Travor",
         "title": "Comandante de Titãs Gasosos",
-        "badge": "🛡️ TRAVOR",
+        "badge": "🧬 MUTANTE TRAVOR",
         "role": "Comandante da Frota Joviana",
+        "character": "mutant",
     },
     "saturn": {
-        "name": "Travor",
+        "name": "Mutante Travor",
         "title": "Comandante das Joias Aneladas",
-        "badge": "🛡️ TRAVOR",
+        "badge": "🧬 MUTANTE TRAVOR",
         "role": "Guardião dos Anéis de Saturno",
+        "character": "mutant",
     },
     "neptune": {
-        "name": "Yin Yang",
+        "name": "Warrok Yin Yang",
         "title": "Mestre dos Ventos Cósmicos",
-        "badge": "☯️ YIN YANG",
+        "badge": "🐾 WARROK YIN YANG",
         "role": "Filósofo das Fronteiras Cósmicas",
+        "character": "warrok",
     },
     "sun": {
-        "name": "Baskerville",
-        "title": "O Cão de Caça dos Baskerville",
-        "badge": "🐾 BASKERVILLE",
+        "name": "Warrok Baskerville",
+        "title": "O Guardião Feroz dos Baskerville",
+        "badge": "🐾 WARROK BASKERVILLE",
         "role": "Farejador do Fogo Solar",
+        "character": "warrok",
     },
     "black_hole": {
-        "name": "Travor",
+        "name": "Mutante Travor",
         "title": "Sentinela do Vazio & Buracos Negros",
-        "badge": "🛡️ SENTINELA TRAVOR",
+        "badge": "🛡️ SENTINELA MUTANTE",
         "role": "Defesa & Escape Gravitacional",
+        "character": "mutant",
     },
 }
 
@@ -88,47 +98,40 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "sun": [
         LessonSection(
             id=1,
-            title="1. O Sol: A Nossa Estrela Mãe",
-            summary="O Sol é a estrela central do Sistema Solar e a fonte de quase toda a energia da vida na Terra.",
+            title="☀️ O Sol, a nossa estrela",
+            summary="O coração do sistema. Concentra 99,86% de toda a massa do Sistema Solar.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville! Bem-vindos ao centro do nosso Sistema Solar: o Sol! "
-                "Esta estrela colossal tem um diâmetro de cerca de um milhão e trezentos e noventa mil quilómetros, sendo "
-                "aproximadamente cento e nove vezes maior do que a Terra. Classificada como uma anã amarela do tipo espectral "
-                "G2V, o Sol contém noventa e nove vírgula oito por cento de toda a massa do Sistema Solar. A sua gravidade "
-                "monumental mantém em órbita os oito planetas, os planetas anões, asteroides, cometas e toda a nuvem de Oort."
+                "O Sol é o coração do sistema. Concentra 99,86% de toda a massa do Sistema Solar, e os planetas, luas e asteroides somam o resto. "
+                "É uma anã amarela (tipo G2V) com cerca de 4,6 mil milhões de anos, e ainda tem combustível para outros 5 mil milhões. "
+                "Composição: cerca de 73% hidrogénio e 25% hélio. "
+                "Energia: no núcleo, a temperatura chega a 15 milhões de graus Celsius. Aí, a fusão nuclear transforma hidrogénio em hélio e liberta a energia que ilumina tudo. "
+                "Superfície (fotosfera): cerca de 5.500 graus Celsius. A coroa, a atmosfera exterior, chega a mais de 1 milhão de graus Celsius, e ninguém sabe ao certo porque é mais quente do que a superfície. É um dos grandes mistérios da astrofísica. "
+                "Curiosidade: a luz demora cerca de 8 minutos e 20 segundos a chegar até nós. Quando olhamos para o Sol, vemos o passado."
             ),
-            estimated_duration_sec=24.0,
-            keywords=["Sol", "Anã Amarela", "G2V", "Massa", "Gravidade"],
+            estimated_duration_sec=35.0,
+            keywords=["Sol", "Anã Amarela", "G2V", "Fusão Nuclear", "Fotosfera", "Coroa Solar"],
         ),
         LessonSection(
             id=2,
-            title="2. Fusão Nuclear e Produção de Energia",
-            summary="O Sol converte hidrogénio em hélio pelo processo de fusão nuclear, libertando energia colossal.",
+            title="☀️ Composição e Energia Nuclear do Sol",
+            summary="Fusão nuclear a 15 milhões °C no núcleo e composição de 73% hidrogénio e 25% hélio.",
             speech_text=(
-                "O motor do Sol é a fusão nuclear termonuclear. No núcleo solar, onde as temperaturas atingem quinze "
-                "milhões de graus Celsius e a pressão é duzentas e cinquenta mil vezes superior à da superfície "
-                "terrestre, átomos de hidrogénio fundem-se para formar hélio. Cada segundo, o Sol converte cerca de "
-                "seiscentos milhões de toneladas de hidrogénio em hélio, libertando uma quantidade de energia "
-                "equivalente a quatro vírgula dois vezes dez elevado a vinte e seis watts. Esta fusão é regida pela "
-                "famosa equação de Einstein: E é igual a mc ao quadrado."
+                "Composição: cerca de 73% hidrogénio e 25% hélio. "
+                "Energia: no núcleo, a temperatura chega a 15 milhões de graus Celsius. Aí, a fusão nuclear transforma hidrogénio em hélio e liberta a energia que ilumina tudo."
             ),
-            estimated_duration_sec=26.0,
-            keywords=["Fusão Nuclear", "Hidrogénio", "Hélio", "Energia", "Einstein"],
+            estimated_duration_sec=16.0,
+            keywords=["Composição", "Hidrogénio", "Hélio", "Fusão Nuclear", "Núcleo"],
         ),
         LessonSection(
             id=3,
-            title="3. Estrutura Solar e Atividade Magnética",
-            summary="O Sol possui núcleo, zona radiativa, zona convectiva, fotosfera, cromosfera e coroa solar.",
+            title="☀️ Superfície, Coroa e o Olhar para o Passado",
+            summary="Fotosfera a 5.500 °C, mistério da coroa a 1 milhão °C e luz solar a 8m 20s.",
             speech_text=(
-                "O Sol é estruturado em camadas distintas. O núcleo é rodeado pela zona radiativa, onde os fotões "
-                "demoram dezenas de milhares de anos a viajar até à superfície. A zona convectiva transporta energia "
-                "por correntes de plasma quente e frio. A fotosfera visível, a seis mil graus Celsius, é onde surgem "
-                "as manchas solares — regiões magneticamente ativas e mais frias. A coroa solar, a camada mais externa, "
-                "atinge temperaturas de um a dois milhões de graus Celsius, num paradoxo ainda não totalmente "
-                "explicado pela ciência. É daqui que parte o vento solar que atravessa todo o Sistema Solar."
+                "Superfície (fotosfera): cerca de 5.500 graus Celsius. A coroa, a atmosfera exterior, chega a mais de 1 milhão de graus Celsius, e ninguém sabe ao certo porque é mais quente do que a superfície. É um dos grandes mistérios da astrofísica. "
+                "Curiosidade: a luz demora cerca de 8 minutos e 20 segundos a chegar até nós. Quando olhamos para o Sol, vemos o passado."
             ),
-            estimated_duration_sec=28.0,
-            keywords=["Fotosfera", "Coroa Solar", "Manchas Solares", "Vento Solar", "Plasma"],
+            estimated_duration_sec=20.0,
+            keywords=["Fotosfera", "Coroa", "Mistério da Astrofísica", "Luz Solar", "Passado"],
         ),
     ],
 
@@ -136,46 +139,16 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "mercury": [
         LessonSection(
             id=1,
-            title="1. Mercúrio: O Mensageiro Veloz",
-            summary="O menor e mais interior planeta do Sistema Solar, com órbita extremamente excêntrica e rápida.",
+            title="☿ Mercúrio, o mensageiro veloz",
+            summary="O mais pequeno e mais próximo do Sol, órbita de 88 dias e temperaturas de 430 °C a -180 °C.",
             speech_text=(
-                "Olá viajantes cósmicos! Sou a Tracy, a vossa guia em Mercúrio: o planeta mais veloz e próximo do Sol! "
-                "Com apenas quatro mil oitocentos e setenta e nove quilómetros de diâmetro, é ligeiramente maior do que "
-                "a nossa Lua. Orbita o Sol a cinquenta e oito milhões de quilómetros, completando uma volta completa em apenas "
-                "oitenta e oito dias. A sua superfície rochosa está coberta de crateras ancestrais e escarpas gigantescas!"
+                "O mais pequeno e o mais próximo do Sol. Dá a volta ao Sol em apenas 88 dias. "
+                "Atmosfera: praticamente inexistente (uma exosfera muito ténue de oxigénio, sódio e hidrogénio). "
+                "Temperaturas extremas: 430 graus Celsius de dia e 180 graus negativos de noite, porque sem atmosfera não há nada que retenha o calor. "
+                "Singularidade: um dia solar dura 176 dias terrestres, o dobro do seu ano. Está cheio de crateras e tem gelo de água nas crateras permanentemente à sombra dos polos."
             ),
-            estimated_duration_sec=23.0,
-            keywords=["Mercúrio", "Planeta Interior", "Crateras", "Órbita", "Rupes"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. Extremos de Temperatura e Ausência de Atmosfera",
-            summary="Mercúrio apresenta as maiores amplitudes térmicas do Sistema Solar devido à quase ausência de atmosfera.",
-            speech_text=(
-                "Sem uma atmosfera protetora significativa, Mercúrio sofre as maiores amplitudes térmicas de todo o "
-                "Sistema Solar. Durante o dia, a temperatura superficial pode atingir quatrocentos e trinta graus "
-                "Celsius, enquanto à noite despenca para cento e oitenta graus negativos. Esta amplitude de mais de "
-                "seiscentos graus é simplesmente extraordinária. Mercúrio possui apenas uma exosfera vestigial "
-                "composta por sódio, oxigénio, hidrogénio e hélio, continuamente reposta pelo vento solar e "
-                "impactos de meteoroides."
-            ),
-            estimated_duration_sec=22.0,
-            keywords=["Temperatura", "Exosfera", "Amplitude Térmica", "Vento Solar", "Ausência de Atmosfera"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Campo Magnético e Núcleo Metálico",
-            summary="Mercúrio possui surpreendentemente um campo magnético global gerado por um grande núcleo de ferro.",
-            speech_text=(
-                "Uma das maiores surpresas científicas de Mercúrio é a existência de um campo magnético global, "
-                "embora cerca de cem vezes mais fraco do que o da Terra. Este campo é gerado pelo seu imenso núcleo "
-                "de ferro, que ocupa aproximadamente oitenta e cinco por cento do raio do planeta — o maior núcleo "
-                "relativo de qualquer planeta rochoso. A missão MESSENGER da NASA, que orbitou Mercúrio entre dois "
-                "mil e onze e dois mil e quinze, confirmou a existência de gelo de água nos crateras polares "
-                "permanentemente na sombra, numa descoberta revolucionária para a ciência planetária."
-            ),
-            estimated_duration_sec=25.0,
-            keywords=["Campo Magnético", "Núcleo de Ferro", "MESSENGER", "Gelo Polar", "NASA"],
+            estimated_duration_sec=28.0,
+            keywords=["Mercúrio", "Exosfera", "Temperaturas Extremas", "Dia Solar", "Crateras"],
         ),
     ],
 
@@ -183,45 +156,16 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "venus": [
         LessonSection(
             id=1,
-            title="1. Vénus: O Planeta Gémeo Infernal",
-            summary="Vénus é o planeta mais brilhante do céu noturno e o mais quente do Sistema Solar.",
+            title="♀ Vénus, o irmão infernal",
+            summary="O planeta mais quente do Sistema Solar, 465 °C, pressão 90x da Terra e rotação retrógrada.",
             speech_text=(
-                "Aqui é a Tracy! Bem-vindos ao planeta mais quente e denso: Vénus! Embora tenha dimensões muito semelhantes "
-                "às da Terra com doze mil cento e quatro quilómetros de diâmetro, a sua atmosfera asfixiante de dióxido de carbono "
-                "cria um efeito de estufa descontrolado, elevando a temperatura superficial a quatrocentos e sessenta e cinco graus!"
+                "Quase do tamanho da Terra, mas um inferno. É o planeta mais quente do Sistema Solar, apesar de não ser o mais próximo do Sol. "
+                "Atmosfera: 96% dióxido de carbono, com nuvens de ácido sulfúrico. A pressão à superfície é 90 vezes a da Terra, equivalente a estar 900 metros debaixo de água. "
+                "Temperatura: cerca de 465 graus Celsius, o suficiente para derreter chumbo. É o efeito de estufa descontrolado. "
+                "Singularidade: gira ao contrário (rotação retrógrada) e muito devagar: um dia em Vénus dura mais do que o seu ano. Aí, o Sol nasce a oeste."
             ),
-            estimated_duration_sec=23.0,
-            keywords=["Vénus", "Planeta Gémeo", "Temperatura", "Mais Quente", "Estrela da Manhã"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. O Efeito de Estufa Descontrolado",
-            summary="A atmosfera densa de CO₂ cria o mais intenso efeito de estufa do Sistema Solar.",
-            speech_text=(
-                "A atmosfera de Vénus é uma lição devastadora sobre o efeito de estufa. Composta por noventa e seis "
-                "por cento de dióxido de carbono e quatro por cento de azoto, com nuvens espessas de ácido sulfúrico, "
-                "cria uma pressão superficial noventa e duas vezes superior à da Terra — equivalente a um quilómetro "
-                "de profundidade oceânica. Este espesso casaco de dióxido de carbono aprisiona o calor de forma tão "
-                "eficaz que Vénus é mais quente do que Mercúrio, apesar de estar muito mais afastado do Sol. "
-                "É o exemplo clássico de um efeito de estufa descontrolado."
-            ),
-            estimated_duration_sec=25.0,
-            keywords=["Efeito de Estufa", "CO2", "Dióxido de Carbono", "Ácido Sulfúrico", "Pressão"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Rotação Retrógrada e Vulcanismo Ativo",
-            summary="Vénus roda no sentido contrário aos outros planetas e possui imenso vulcanismo ativo.",
-            speech_text=(
-                "Vénus apresenta duas peculiaridades fascinantes. Primeiro, roda no sentido retrógrado — ao contrário "
-                "da maioria dos planetas — com um dia venusiano de duzentos e quarenta e três dias terrestres, "
-                "mais longo do que o seu próprio ano de duzentos e vinte e cinco dias. Segundo, as sondas espaciais "
-                "revelaram uma superfície dominada pelo vulcanismo, com mais de mil setecentos grandes vulcões "
-                "identificados. Dados recentes da sonda Magellan e da missão EnVision sugerem que Vénus pode ainda "
-                "ter vulcanismo ativo, tornando-o geologicamente dinâmico."
-            ),
-            estimated_duration_sec=25.0,
-            keywords=["Rotação Retrógrada", "Vulcanismo", "Dia Venusiano", "Magellan", "EnVision"],
+            estimated_duration_sec=30.0,
+            keywords=["Vénus", "Efeito de Estufa", "Ácido Sulfúrico", "Rotação Retrógrada", "Pressão"],
         ),
     ],
 
@@ -229,47 +173,16 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "mars": [
         LessonSection(
             id=1,
-            title="1. Marte: O Planeta Vermelho",
-            summary="Marte é o quarto planeta, com metade do diâmetro da Terra e marcas de imenso vulcanismo e canyons.",
+            title="♂ Marte, o planeta vermelho",
+            summary="Óxido de ferro no solo, Monte Olimpo de 22 km, Valles Marineris e luas Fobos e Deimos.",
             speech_text=(
-                "Saudações marcianas! Sou o Kayden, o vosso explorador em Marte: o lendário Planeta Vermelho! "
-                "Com seis mil setecentos e setenta e nove quilómetros de diâmetro, Marte abriga a montanha mais alta "
-                "de todo o Sistema Solar: o vulcão Olympus Mons com vinte e dois quilómetros de altitude! "
-                "O solo avermelhado é rico em óxido de ferro, testemunha de eras vulcânicas e rios ancestrais."
+                "A cor vem do óxido de ferro (ferrugem) no solo. "
+                "Atmosfera: muito fina, 95% dióxido de carbono, com menos de 1% da pressão terrestre. É por isso que a água líquida não se mantém estável à superfície. "
+                "Temperaturas: entre 125 graus negativos e 20 graus positivos. "
+                "Singularidade: tem o Monte Olimpo, o maior vulcão do Sistema Solar (cerca de 22 quilómetros de altura, quase 3 vezes o Evereste) e o Valles Marineris, um cânion com mais de 4.000 quilómetros. Há sinais claros de que no passado teve rios e lagos. Tem duas luas pequenas, Fobos e Deimos."
             ),
-            estimated_duration_sec=23.0,
-            keywords=["Marte", "Olympus Mons", "Óxido de Ferro", "Fobos", "Deimos"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. Atmosfera Fina e Condições Climáticas",
-            summary="Marte tem atmosfera de CO₂ muito rarefeita, com tempestades de pó globais e temperatura média negativa.",
-            speech_text=(
-                "A atmosfera marciana é composta por noventa e cinco por cento de dióxido de carbono, mas é "
-                "extremamente rarefeita — apenas um por cento da pressão atmosférica da Terra. A temperatura média "
-                "superficial é de menos sessenta graus Celsius, variando entre menos cento e vinte e trinta e cinco "
-                "graus positivos no equador durante o verão. Marte é famoso pelas suas tempestades de pó globais, "
-                "que podem cobrir o planeta inteiro durante meses. O Valles Marineris, o maior sistema de cânions "
-                "do Sistema Solar, estende-se por quatro mil quilómetros de comprimento."
-            ),
-            estimated_duration_sec=25.0,
-            keywords=["Atmosfera Marciana", "Valles Marineris", "Tempestades de Pó", "Temperatura", "CO2"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Exploração e Perspetivas de Colonização",
-            summary="Múltiplas missões robóticas exploram Marte, com planos humanos para colonização futura.",
-            speech_text=(
-                "Marte é atualmente explorado por uma frota de robôs: os rovers Curiosity e Perseverance analisam "
-                "rochas e procuram sinais de vida passada, enquanto o helicóptero Ingenuity provou ser possível "
-                "voar numa atmosfera tão rarefeita. As análises confirmaram que Marte tinha água líquida há "
-                "mais de três mil milhões de anos e ainda possui água congelada nos polos e subsolo. Esta "
-                "descoberta alimenta o debate sobre vida microbiana passada. Agências como a NASA e a SpaceX "
-                "desenvolvem planos para enviar humanos a Marte nas próximas décadas, tornando-o potencialmente "
-                "o segundo lar da humanidade."
-            ),
-            estimated_duration_sec=27.0,
-            keywords=["Perseverance", "Curiosity", "Ingenuity", "Água em Marte", "Colonização"],
+            estimated_duration_sec=30.0,
+            keywords=["Marte", "Óxido de Ferro", "Monte Olimpo", "Valles Marineris", "Fobos", "Deimos"],
         ),
     ],
 
@@ -277,45 +190,16 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "jupiter": [
         LessonSection(
             id=1,
-            title="1. Júpiter: O Rei dos Planetas",
-            summary="Júpiter é o maior planeta do Sistema Solar, com massa equivalente a 318 Terras.",
+            title="♃ Júpiter, o gigante",
+            summary="O maior planeta, cabem mais de 1.300 Terras, Grande Mancha Vermelha e mais de 90 luas.",
             speech_text=(
-                "Contemplem o titã colossal! Sou o Travor, comandante da frota diante do majestoso Júpiter! "
-                "Com cento e quarenta e dois mil quilómetros de diâmetro — caberiam mais de mil e trezentas Terras no seu interior! "
-                "Júpiter tem mais do que o dobro da massa de todos os outros planetas juntos e governa mais de noventa e cinco luas!"
+                "O maior planeta: cabem mais de 1.300 Terras lá dentro. Tem mais do dobro da massa de todos os outros planetas juntos. "
+                "Atmosfera: hidrogénio em cerca de 90% e hélio em cerca de 10%, com faixas de nuvens de amoníaco. "
+                "Grande Mancha Vermelha: uma tempestade maior do que a Terra, que dura há séculos. "
+                "Singularidade: o dia mais curto de todos, cerca de 10 horas. Tem mais de 90 luas, incluindo Europa, que esconde um oceano debaixo do gelo e é um dos principais candidatos a albergar vida."
             ),
-            estimated_duration_sec=24.0,
-            keywords=["Júpiter", "Maior Planeta", "Luas Galileanas", "Io", "Europa"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. A Grande Mancha Vermelha e Dinâmica Atmosférica",
-            summary="Júpiter possui a maior tempestade do Sistema Solar, ativa há mais de 350 anos.",
-            speech_text=(
-                "O símbolo mais icónico de Júpiter é a Grande Mancha Vermelha, um anticiclone gigantesco com "
-                "mais de dezasseis mil quilómetros de diâmetro — maior do que a Terra inteira! Esta tempestade "
-                "dura há mais de trezentos e cinquenta anos de observação humana, com ventos que ultrapassam "
-                "quinhentos quilómetros por hora. A atmosfera joviana é dominada por bandas de nuvens paralelas "
-                "de amónia e sulfureto de hidrogénio e amónia, coloridas em castanho, laranja, branco e creme. "
-                "Os relâmpagos de Júpiter são milhares de vezes mais poderosos do que os da Terra."
-            ),
-            estimated_duration_sec=25.0,
-            keywords=["Grande Mancha Vermelha", "Tempestade", "Anticiclone", "Amónia", "Relâmpagos"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Protetor do Sistema Solar Interior",
-            summary="A massa de Júpiter atua como escudo gravitacional que protege os planetas interiores de impactos.",
-            speech_text=(
-                "Júpiter desempenha um papel crucial na estabilidade do Sistema Solar interior: a sua enorme massa "
-                "atua como um escudo gravitacional, atraindo e desviando cometas e asteroides que de outra forma "
-                "poderiam colidir com a Terra. Em mil novecentos e noventa e quatro, o cometa Shoemaker-Levy 9 "
-                "fragmentou-se e embateu em Júpiter numa série dramática de impactos televisionados mundialmente. "
-                "A lua Europa, com o seu oceano de água salgada líquida sob uma crosta de gelo, é considerada um "
-                "dos locais mais promissores para a procura de vida extraterrestre no Sistema Solar."
-            ),
-            estimated_duration_sec=26.0,
-            keywords=["Escudo Gravitacional", "Shoemaker-Levy 9", "Europa", "Oceano Subsuperficial", "Vida Extraterrestre"],
+            estimated_duration_sec=30.0,
+            keywords=["Júpiter", "Grande Mancha Vermelha", "Europa", "Titã Gasoso", "Mais de 90 Luas"],
         ),
     ],
 
@@ -323,47 +207,16 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "saturn": [
         LessonSection(
             id=1,
-            title="1. Saturno: A Joia do Sistema Solar",
-            summary="Saturno é famoso pelos seus magníficos anéis e é o único planeta menos denso do que a água.",
+            title="♄ Saturno, o senhor dos anéis",
+            summary="Densidade menor que a água, anéis de gelo e rocha, tempestade hexagonal e luas Titã e Encélado.",
             speech_text=(
-                "Maravilhem-se! Sou o Travor, ao vosso dispor perante a maior joia do Sistema Solar: Saturno! "
-                "Com cento e vinte mil quilómetros de diâmetro e anéis deslumbrantes que se estendem por quase trezentos mil "
-                "quilómetros, feitos de fragmentos puros de gelo e rocha! A densidade média de Saturno é tão baixa que flutuaria na água!"
+                "O mais fotogénico, e tão leve que flutuaria na água (densidade menor que a da água). "
+                "Atmosfera: hidrogénio e hélio, com ventos de até 1.800 quilómetros por hora. "
+                "Anéis: feitos de gelo e rocha, de pedaços minúsculos a blocos do tamanho de casas. Estendem-se por centenas de milhares de quilómetros, mas com espessura de apenas dezenas de metros. "
+                "Singularidade: no polo norte tem uma tempestade hexagonal. Tem mais de 140 luas confirmadas. Titã tem atmosfera densa e lagos de metano líquido, e Encélado expele jatos de água para o espaço."
             ),
-            estimated_duration_sec=23.0,
-            keywords=["Saturno", "Anéis", "Gelo", "Densidade Baixa", "Espetacular"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. Os Anéis: Composição e Origem",
-            summary="Os anéis de Saturno são compostos de gelo e rocha e têm apenas 10 a 100 metros de espessura.",
-            speech_text=(
-                "Os anéis de Saturno são uma maravilha da física gravitacional. Apesar de se estenderem por "
-                "centenas de milhares de quilómetros em largura, têm uma espessura média de apenas dez a cem "
-                "metros. São compostos por fragmentos de gelo, rocha e pó, organizados em faixas concêntricas "
-                "denominadas A, B, C, D, E, F e G. A missão Cassini-Huygens, que orbitou Saturno entre dois "
-                "mil e quatro e dois mil e dezassete, revelou que os anéis têm apenas trezentos a quatrocentos "
-                "milhões de anos de idade — relativamente jovens à escala cósmica — e estão a desaparecer "
-                "gradualmente para Saturno, num fenómeno chamado chuva de anéis."
-            ),
-            estimated_duration_sec=26.0,
-            keywords=["Anéis", "Cassini-Huygens", "Gelo de Água", "Chuva de Anéis", "Espessura"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Titã: A Lua com Oceanos de Metano",
-            summary="Titã, a maior lua de Saturno, tem atmosfera densa e lagos de metano líquido na superfície.",
-            speech_text=(
-                "Saturno tem oitenta e três luas confirmadas, sendo Titã a mais fascinante. Com cinco mil cento "
-                "e cinquenta quilómetros de diâmetro, é a segunda maior lua do Sistema Solar e a única com uma "
-                "atmosfera densa, composta por nitrogénio e metano. Na superfície de Titã, a menos cento e "
-                "oitenta graus Celsius, existem lagos e rios de metano e etano líquido, seguindo um ciclo "
-                "hidrológico análogo ao da água na Terra. A sonda Huygens aterrou em Titã em dois mil e cinco, "
-                "revelando planícies de areia de hidrocarbonetos e rios secos. A missão Dragonfly da NASA, "
-                "prevista para a próxima década, irá explorar Titã com um veículo drone."
-            ),
-            estimated_duration_sec=28.0,
-            keywords=["Titã", "Metano", "Atmosfera", "Huygens", "Dragonfly"],
+            estimated_duration_sec=30.0,
+            keywords=["Saturno", "Anéis de Gelo", "Tempestade Hexagonal", "Titã", "Encélado"],
         ),
     ],
 
@@ -371,45 +224,17 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "uranus": [
         LessonSection(
             id=1,
-            title="1. Úrano: O Planeta Deitado",
-            summary="Úrano órbita o Sol praticamente de lado, com uma inclinação axial de 97,8 graus.",
+            title="⛢ Urano, o planeta deitado",
+            summary="Gigante de gelo azul-esverdeado com inclinação de 98°, atmosfera a -224 °C e 27 luas de Shakespeare.",
             speech_text=(
-                "Aqui é o Kayden! Olhem para Úrano: o gigante de gelo mais rebelde do sistema solar! "
-                "Com cinquenta e um mil quilómetros de diâmetro e manto de gelo cósmico, Úrano roda completamente deitado, "
-                "com uma inclinação inacreditável de quase noventa e oito graus! Rola pelo espaço como um barril em órbita!"
+                "Um gigante de gelo, de cor azul-esverdeada, devido ao metano na atmosfera, que absorve a luz vermelha. "
+                "Atmosfera: hidrogénio, hélio e metano. "
+                "Singularidade: roda de lado, com eixo inclinado a 98 graus, provavelmente devido a uma colisão gigante no passado. Cada polo passa 42 anos seguidos virado para o Sol e outros 42 na escuridão. "
+                "Temperatura: cerca de 224 graus negativos, a atmosfera planetária mais fria registada, apesar de Neptuno estar mais longe. "
+                "Tem anéis ténues e 27 luas conhecidas, com nomes de personagens de Shakespeare."
             ),
-            estimated_duration_sec=23.0,
-            keywords=["Úrano", "Inclinação Axial", "Gigante de Gelo", "97.8 Graus", "Colisão Primordial"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. Composição e Estrutura Interna",
-            summary="Úrano é um gigante de gelo com manto de água, amónia e metano em estado supercrítico.",
-            speech_text=(
-                "Ao contrário dos gigantes gasosos Júpiter e Saturno, Úrano é classificado como gigante de gelo. "
-                "O seu manto é composto por uma mistura de água, amónia e metano em estado supercrítico — nem "
-                "sólido nem gasoso. É o metano na atmosfera superior que absorve a luz vermelha e reflete a "
-                "luz azul-esverdeada, dando a Úrano a sua cor característica de azul pálido. A temperatura "
-                "mínima da sua troposfera é de menos duzentos e vinte e quatro graus Celsius, tornando Úrano "
-                "o planeta mais frio do Sistema Solar, apesar de Neptuno estar mais distante do Sol."
-            ),
-            estimated_duration_sec=24.0,
-            keywords=["Gigante de Gelo", "Metano", "Cor Azul", "Temperatura", "Supercrítico"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Sistema de Anéis e Luas",
-            summary="Úrano possui 13 anéis escuros e 27 luas com nomes de personagens de Shakespeare e Pope.",
-            speech_text=(
-                "Úrano possui um sistema de treze anéis conhecidos, muito mais escuros e estreitos do que os "
-                "de Saturno, compostos por partículas de poeira e pequenas pedras escuras ricas em carbono. "
-                "O planeta tem também vinte e sete luas confirmadas, todas com nomes inspirados em personagens "
-                "das obras de William Shakespeare e Alexander Pope, como Miranda, Ariel, Umbriel, Titânia "
-                "e Oberon. A lua Miranda destaca-se pela sua superfície caótica de falésias com até dez "
-                "quilómetros de altura — as mais altas do Sistema Solar em proporção ao tamanho do corpo celeste."
-            ),
-            estimated_duration_sec=25.0,
-            keywords=["Anéis de Úrano", "Miranda", "Shakespeare", "27 Luas", "Falésias"],
+            estimated_duration_sec=30.0,
+            keywords=["Urano", "Inclinação de 98°", "Gigante de Gelo", "Frio Extremo", "Shakespeare"],
         ),
     ],
 
@@ -417,48 +242,16 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "neptune": [
         LessonSection(
             id=1,
-            title="1. Neptuno: O Gigante do Vento",
-            summary="Neptuno é o planeta mais distante do Sol, com os ventos mais fortes do Sistema Solar.",
+            title="♆ Neptuno, o azul profundo",
+            summary="O último planeta a 4,5 mil milhões de km, ventos a 2.000 km/h, descoberto por matemática e Tritão.",
             speech_text=(
-                "Equilíbrio nas profundezas do cosmos! Sou o Yin Yang, explorando as tempestades supersónicas de Neptuno! "
-                "Situado a trinta vezes a distância da Terra ao Sol, este gigante azul-cobalto de quarenta e nove mil "
-                "quilómetros de diâmetro foi descoberto pela força pura da matemática! Aqui os ventos atingem 2.100 km/h!"
+                "O último planeta, a 4,5 mil milhões de quilómetros do Sol. A luz solar demora mais de 4 horas a chegar lá. "
+                "Atmosfera: hidrogénio, hélio e metano, com um azul mais vivo que Urano. "
+                "Singularidade: tem os ventos mais rápidos do Sistema Solar, que chegam a mais de 2.000 quilómetros por hora. Foi o primeiro planeta descoberto por cálculos matemáticos, antes de ser observado. "
+                "Um ano em Neptuno dura 165 anos terrestres. A lua Tritão orbita ao contrário e tem géiseres de azoto."
             ),
-            estimated_duration_sec=24.0,
-            keywords=["Neptuno", "Planeta Mais Distante", "Descoberta Matemática", "Le Verrier", "30 UA"],
-        ),
-        LessonSection(
-            id=2,
-            title="2. Ventos Supersónicos e Grande Mancha Escura",
-            summary="Neptuno tem ventos de mais de 2.100 km/h e uma grande tempestade oval chamada Grande Mancha Escura.",
-            speech_text=(
-                "Neptuno é o planeta mais ventoso do Sistema Solar. Os seus ventos atingem velocidades "
-                "superiores a dois mil e cem quilómetros por hora — mais rápidos do que o som! Esta "
-                "violência atmosférica extrema é surpreendente dado que Neptuno recebe menos de um milésimo "
-                "da radiação solar que a Terra. A sua energia interna interna deve ser a fonte desta "
-                "dinâmica. A sonda Voyager 2, que sobrevoou Neptuno em mil novecentos e oitenta e nove, "
-                "fotografou a Grande Mancha Escura, uma tempestade oval do tamanho da Terra, embora esta "
-                "tenha desaparecido e novas tenham surgido posteriormente, observadas pelo Telescópio Hubble."
-            ),
-            estimated_duration_sec=26.0,
-            keywords=["Ventos", "Grande Mancha Escura", "Voyager 2", "Hubble", "Tempestade"],
-        ),
-        LessonSection(
-            id=3,
-            title="3. Tritão: A Lua Capturada",
-            summary="Tritão é a maior lua de Neptuno, orbita no sentido contrário e tem geysers de azoto.",
-            speech_text=(
-                "Neptuno tem catorze luas conhecidas, sendo Tritão a maior e mais extraordinária. Com "
-                "dois mil setecentos quilómetros de diâmetro, Tritão órbita Neptuno no sentido retrógrado "
-                "— o contrário da rotação do planeta — o que revela claramente que foi capturado do "
-                "Cinturão de Kuiper e não se formou naturalmente com Neptuno. A sua superfície de azoto "
-                "congelado tem apenas trinta e oito graus acima do zero absoluto, e a Voyager 2 detetou "
-                "geysers ativos que expelem azoto gasoso a oito quilómetros de altitude. Tritão está em "
-                "decaimento orbital e, em cerca de três mil milhões de anos, será destruído pela maré "
-                "gravitacional de Neptuno."
-            ),
-            estimated_duration_sec=27.0,
-            keywords=["Tritão", "Órbita Retrógrada", "Geysers", "Cinturão de Kuiper", "Decaimento Orbital"],
+            estimated_duration_sec=29.0,
+            keywords=["Neptuno", "Ventos Supersónicos", "Cálculos Matemáticos", "Tritão", "4.5 Mil Milhões km"],
         ),
     ],
 
@@ -466,40 +259,78 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
     "black_hole": [
         LessonSection(
             id=1,
-            title="1. Buracos Negros: Singularidades e Curvatura Infinita",
-            summary="Regiões do espaço-tempo onde a gravidade é tão extrema que nada, nem a luz, consegue escapar.",
+            title="🌀 Sagitário A*, o gigante da nossa casa",
+            summary="No centro da Via Láctea a 26.000 anos-luz, 4,3 milhões de massas solares e imagem do EHT em 2022.",
             speech_text=(
-                "Atenção máxima, tripulante! Sou o Travor, Sentinela do Vazio. Estamos perante uma das entidades mais "
-                "assombrosas do cosmos: um Buraco Negro! Formado pelo colapso de estrelas supermassivas, toda a sua massa "
-                "está comprimida numa singularidade de densidade infinita. A curvatura do espaço-tempo aqui distorce a luz "
-                "das estrelas pelo impressionante efeito de lente gravitacional!"
+                "Está no centro da Via Láctea, a cerca de 26.000 anos-luz de nós. "
+                "Massa: cerca de 4,3 milhões de massas solares, concentradas numa região mais pequena do que a órbita de Mercúrio. "
+                "Como o conhecemos: durante décadas, os astrónomos seguiram estrelas a orbitar um ponto invisível a velocidades enormes. "
+                "Só um objeto supermassivo explicava aquele movimento, e isso valeu o Nobel da Física de 2020. "
+                "Singularidade: em 2022, o Event Horizon Telescope divulgou a primeira imagem direta dele. Hoje está relativamente calmo, quase adormecido, com pouca matéria a cair para dentro."
             ),
-            estimated_duration_sec=25.0,
-            keywords=["Buraco Negro", "Singularidade", "Gravidade Extrema", "Lente Gravitacional"],
+            estimated_duration_sec=30.0,
+            keywords=["Sagitário A*", "Via Láctea", "Nobel da Física 2020", "EHT", "Supermassivo"],
         ),
         LessonSection(
             id=2,
-            title="2. O Horizonte de Eventos e Atração Relativística",
-            summary="A fronteira do não-retorno: a velocidade de escape excede a velocidade da luz.",
+            title="🔥 M87*, o primeiro retrato",
+            summary="No centro da galáxia Messier 87 a 55 milhões de anos-luz, 6,5 mil milhões de massas solares e primeiro fotografado.",
             speech_text=(
-                "O perímetro negro que observas é o Horizonte de Eventos. Esta é a fronteira definitiva do universo: "
-                "uma vez cruzada, a velocidade de escape supera a velocidade da luz. Quando te aproximas demasiado, "
-                "a força de maré provoca espargueteificação na matéria. Permanece em alerta vermelho!"
+                "Está no centro da galáxia Messier 87, a cerca de 55 milhões de anos-luz. "
+                "Massa: cerca de 6,5 mil milhões de massas solares, um verdadeiro monstro. "
+                "Singularidade: foi o primeiro buraco negro fotografado, em abril de 2019. A imagem mostra um anel de luz laranja em redor de uma sombra escura, que é o disco de acreção distorcido pela gravidade. "
+                "Jato: lança um jato de partículas a velocidades próximas da luz, com milhares de anos-luz de comprimento."
             ),
-            estimated_duration_sec=24.0,
-            keywords=["Horizonte de Eventos", "Velocidade da Luz", "Espargueteificação", "Força de Maré"],
+            estimated_duration_sec=29.0,
+            keywords=["M87*", "Messier 87", "Primeira Fotografia", "Disco de Acreção", "Jato Relativístico"],
         ),
         LessonSection(
             id=3,
-            title="3. Efeito Buraco de Minhoca e Instrução de Fuga",
-            summary="Instruções vitais de sobrevivência ao ser sugado pelo vórtice gravitacional.",
+            title="⚡ Cygnus X-1, o pioneiro",
+            summary="Na constelação do Cisne a 7.000 anos-luz, 21 massas solares e a famosa aposta Hawking-Thorne.",
             speech_text=(
-                "Instrução crítica de sobrevivência: se o vórtice de sucção gravitacional te começar a puxar, a câmara "
-                "sofrerá turbulência violenta. Para te safares desta armadilha, MANTÉM PREMIDO A TECLA SHIFT para acionar "
-                "a propulsão Warp nos motores de fuga! Repito: segura SHIFT para romper a gravidade e salvar a nave!"
+                "Fica na constelação do Cisne, a cerca de 7.000 anos-luz. "
+                "Massa: cerca de 21 massas solares, um buraco negro estelar. "
+                "Como funciona: está em órbita com uma estrela azul gigante, da qual vai arrancando matéria. Esse gás aquece e emite raios X intensos, e é assim que o detetamos. "
+                "Singularidade: foi um dos primeiros candidatos fortes a buraco negro, e ficou famoso por uma aposta entre Stephen Hawking e Kip Thorne sobre se era mesmo um buraco negro. Hawking apostou que não e perdeu."
             ),
-            estimated_duration_sec=26.0,
-            keywords=["Buraco de Minhoca", "Propulsão Warp", "Tecla SHIFT", "Escape Relativístico"],
+            estimated_duration_sec=29.0,
+            keywords=["Cygnus X-1", "Constelação do Cisne", "Raios X", "Stephen Hawking", "Kip Thorne"],
+        ),
+        LessonSection(
+            id=4,
+            title="🔭 Gaia BH1, o vizinho",
+            summary="O buraco negro mais próximo da Terra a 1.600 anos-luz, silencioso e descoberto pelo satélite Gaia em 2022.",
+            speech_text=(
+                "É um dos buracos negros mais próximos da Terra, a cerca de 1.600 anos-luz, na constelação do Ofiúco. "
+                "Massa: cerca de 10 massas solares. "
+                "Singularidade: é um buraco negro silencioso. Não tem disco de acreção brilhante, por isso não emite raios X. Foi descoberto em 2022 pelo satélite Gaia, ao detetar uma estrela parecida com o Sol que dançava à volta de um companheiro invisível. "
+                "Mensagem: mostra que pode haver milhões de buracos negros escondidos na nossa galáxia que nunca vimos."
+            ),
+            estimated_duration_sec=28.0,
+            keywords=["Gaia BH1", "Ofiúco", "Mais Próximo", "Silencioso", "Satélite Gaia"],
+        ),
+        LessonSection(
+            id=5,
+            title="🌊 GW150914, o que fez o espaço tremer",
+            summary="Fusão de dois buracos negros a 1,3 mil milhões de anos-luz, detetada por ondas gravitacionais pelo LIGO em 2015.",
+            speech_text=(
+                "Não é um buraco negro único, mas uma fusão de dois, a cerca de 1,3 mil milhões de anos-luz. "
+                "O evento: dois buracos negros de cerca de 36 e 29 massas solares fundiram-se num só, com cerca de 62 massas solares. "
+                "Singularidade: as três massas solares que faltam foram convertidas em energia sob a forma de ondas gravitacionais, detetadas pelo LIGO em setembro de 2015. Foi a primeira vez que a humanidade ouviu o universo através do espaço-tempo."
+            ),
+            estimated_duration_sec=29.0,
+            keywords=["GW150914", "Fusão de Buracos Negros", "Ondas Gravitacionais", "LIGO 2015", "Espaço-Tempo"],
         ),
     ],
 }
+
+# Aliases diretos para acesso por chave de buraco negro
+PLANET_LESSONS["sagittarius_a"] = [PLANET_LESSONS["black_hole"][0]]
+PLANET_LESSONS["sagitario_a"] = [PLANET_LESSONS["black_hole"][0]]
+PLANET_LESSONS["m87"] = [PLANET_LESSONS["black_hole"][1]]
+PLANET_LESSONS["cygnus_x1"] = [PLANET_LESSONS["black_hole"][2]]
+PLANET_LESSONS["gaia_bh1"] = [PLANET_LESSONS["black_hole"][3]]
+PLANET_LESSONS["gw150914"] = [PLANET_LESSONS["black_hole"][4]]
+PLANET_LESSONS["gargantua"] = [PLANET_LESSONS["black_hole"][0]]
+

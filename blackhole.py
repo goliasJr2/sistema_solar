@@ -346,7 +346,7 @@ class BlackHoleSystem:
         # Rota de saída padrão ao deixar o Sol e avançar em linha reta
         # ---------------------------------------------------------------------
         self.black_holes.append(BlackHole(
-            name="Cygnus X-1 (Singularidade Primária)",
+            name="Cygnus X-1 (⚡ O Pioneiro)",
             position=glm.vec3(0.0, 25.0, -650.0),
             scale=24.0,
             model_filename="black_hole.glb",
@@ -357,7 +357,7 @@ class BlackHoleSystem:
             pull_radius=200.0,
             light_color=glm.vec3(1.0, 0.85, 0.5),
             ambient_color=glm.vec3(0.95, 0.6, 0.2),
-            description="Singularidade primária de acreção ultra-rápida no vazio frontal.",
+            description="Buraco negro estelar na constelação do Cisne a 7.000 anos-luz, famoso pela aposta de Hawking e Thorne.",
         ))
 
         # ---------------------------------------------------------------------
@@ -382,7 +382,7 @@ class BlackHoleSystem:
         # 3. Sagitário A* (Buraco Negro Supermassivo: Setor Núcleo Profundo: -X, -Z)
         # ---------------------------------------------------------------------
         self.black_holes.append(BlackHole(
-            name="Sagitário A* (Buraco Negro Supermassivo)",
+            name="Sagitário A* (🌀 O Gigante da Nossa Casa)",
             position=glm.vec3(-950.0, -120.0, -950.0),
             scale=45.0,
             model_filename="black_hole_galaxy.glb",
@@ -393,14 +393,14 @@ class BlackHoleSystem:
             pull_radius=250.0,
             light_color=glm.vec3(0.8, 0.7, 1.0),
             ambient_color=glm.vec3(0.7, 0.5, 0.95),
-            description="Coração supermassivo galáctico no centro do aglomerado cósmico.",
+            description="No centro da Via Láctea a 26.000 anos-luz, 4,3 milhões de massas solares e imagem do EHT em 2022.",
         ))
 
         # ---------------------------------------------------------------------
-        # 4. V404 Cygni (Microquasar Relativístico: Setor Sudeste: +X, +Z)
+        # 4. Gaia BH1 (O Vizinho Silencioso: Setor Sudeste: +X, +Z)
         # ---------------------------------------------------------------------
         self.black_holes.append(BlackHole(
-            name="V404 Cygni (Microquasar Relativístico)",
+            name="Gaia BH1 (🔭 O Vizinho Silencioso)",
             position=glm.vec3(700.0, -90.0, 650.0),
             scale=22.0,
             model_filename="black_hole (1).glb",
@@ -411,14 +411,14 @@ class BlackHoleSystem:
             pull_radius=180.0,
             light_color=glm.vec3(0.5, 0.8, 1.0),
             ambient_color=glm.vec3(0.3, 0.6, 0.9),
-            description="Microquasar dinâmico com emissão intensa em raios-X e jatos azuis relativísticos.",
+            description="O buraco negro mais próximo da Terra a 1.600 anos-luz, silencioso e descoberto pelo satélite Gaia em 2022.",
         ))
 
         # ---------------------------------------------------------------------
-        # 5. GRO J1655-40 (Vórtice Escarlate: Setor Sudoeste: -X, +Z)
+        # 5. GW150914 (O Que Fez o Espaço Tremer: Setor Sudoeste: -X, +Z)
         # ---------------------------------------------------------------------
         self.black_holes.append(BlackHole(
-            name="GRO J1655-40 (Vórtice Espaço-Temporal Escarlate)",
+            name="GW150914 (🌊 O Que Fez o Espaço Tremer)",
             position=glm.vec3(-750.0, 110.0, 600.0),
             scale=22.0,
             model_filename="black_hole (2).glb",
@@ -429,14 +429,14 @@ class BlackHoleSystem:
             pull_radius=180.0,
             light_color=glm.vec3(1.0, 0.35, 0.3),
             ambient_color=glm.vec3(0.9, 0.25, 0.25),
-            description="Singularidade escarlate com curvatura espaço-temporal extrema e plasma incandescente.",
+            description="Fusão de dois buracos negros a 1,3 mil milhões de anos-luz, detetada por ondas gravitacionais pelo LIGO em 2015.",
         ))
 
         # ---------------------------------------------------------------------
-        # 6. M87* Progenitor (Horizonte das Sombras Cósmicas: Setor Zénite / Superior: +Y)
+        # 6. M87* (O Primeiro Retrato: Setor Zénite / Superior: +Y)
         # ---------------------------------------------------------------------
         self.black_holes.append(BlackHole(
-            name="M87* Progenitor (Horizonte das Sombras Cósmicas)",
+            name="M87* (🔥 O Primeiro Retrato)",
             position=glm.vec3(150.0, 750.0, -300.0),
             scale=26.0,
             model_filename="black_hole (3).glb",
@@ -447,7 +447,7 @@ class BlackHoleSystem:
             pull_radius=190.0,
             light_color=glm.vec3(1.0, 0.6, 0.2),
             ambient_color=glm.vec3(0.85, 0.5, 0.1),
-            description="Gigante cósmico situado no plano superior do espaço profundo.",
+            description="No centro da galáxia Messier 87 a 55 milhões de anos-luz, 6,5 mil milhões de massas solares e primeiro fotografado.",
         ))
 
         # ---------------------------------------------------------------------

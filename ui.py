@@ -548,7 +548,8 @@ class UIManager:
         cy += 5
         scale_cmds = [
             ("[F2] Galáxia      [F3] Região Estelar      [F4] Sistema Solar      [ENTER] Superfície", ""),
-            ("[U] Mudo/Som Voz     [X] Modo Solo (Exploração Solitária)     [I] Informações     [F1] Ajuda", ""),
+            ("[U] Mudo/Som Voz     [K] Alternar Personagem (Remy/Goblin/Mutant/Warrok)     [X] Fechar Guia", ""),
+            ("[I] Painel de Informações                                              [F1] Ajuda", ""),
         ]
         for key, desc in scale_cmds:
             draw.text((x0 + 30, cy), key, fill=(180, 230, 255), font=self.font_small)
@@ -562,9 +563,9 @@ class UIManager:
 
     def _draw_baskerville_frame(self, draw: ImageDraw.ImageDraw, info: dict) -> None:
         """Desenha a moldura de alta tecnologia no canto superior direito para a cabeça 3D do personagem apresentador."""
-        # Alinhado exatamente com a viewport 3D OpenGL (260 x 280 px)
-        view_w = 260
-        view_h = 280
+        # Alinhado exatamente com a viewport 3D OpenGL (360 x 420 px)
+        view_w = 360
+        view_h = 420
         x0 = self.width - view_w - 20
         y0 = 55
         x1 = x0 + view_w

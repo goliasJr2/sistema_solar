@@ -48,10 +48,79 @@ from .guide_animation import SkeletalTransformState
 from .facial_animation import FacialParameters
 
 
+CHARACTER_PROFILES: Dict[str, dict] = {
+    "remy": {
+        "id": "remy",
+        "name": "Tracy / Humano",
+        "badge": "👩‍🚀 TRACY",
+        "role": "Guia Astronómica Terrestre",
+        "model_path": "Models/guide_remy.glb",
+        "default_texture": "Remy_Body_Diffuse.png",
+        "camera_target": glm.vec3(0.0, 350.0, 4.0),
+        "camera_distance": 155.0,
+        "camera_pitch": 1.5,
+        "camera_yaw": 0.0,
+        "head_pivot": glm.vec3(0.0, 325.0, 3.0),
+        "right_shoulder_pivot": glm.vec3(38.0, 280.0, 0.0),
+        "left_shoulder_pivot": glm.vec3(-38.0, 280.0, 0.0),
+        "sitting_scale": 1.0 / 260.0,
+    },
+    "goblin": {
+        "id": "goblin",
+        "name": "Goblin Cósmico",
+        "badge": "👺 GOBLIN D'SHAREYKO",
+        "role": "Explorador e Guardião das Sombras",
+        "model_path": "Models/guide_goblin.glb",
+        "default_texture": "goblin_diffuse.png",
+        "camera_target": glm.vec3(0.0, 182.0, 10.0),
+        "camera_distance": 135.0,
+        "camera_pitch": 1.5,
+        "camera_yaw": 0.0,
+        "head_pivot": glm.vec3(0.0, 160.0, 5.0),
+        "right_shoulder_pivot": glm.vec3(30.0, 140.0, 0.0),
+        "left_shoulder_pivot": glm.vec3(-30.0, 140.0, 0.0),
+        "sitting_scale": 1.0 / 150.0,
+    },
+    "mutant": {
+        "id": "mutant",
+        "name": "Mutante Titã",
+        "badge": "🧬 MUTANTE TITÃ",
+        "role": "Comandante de Mundos Hostis",
+        "model_path": "Models/guide_mutant.glb",
+        "default_texture": "mutant_diffuse.png",
+        "camera_target": glm.vec3(0.0, 165.0, 12.0),
+        "camera_distance": 120.0,
+        "camera_pitch": 1.5,
+        "camera_yaw": 0.0,
+        "head_pivot": glm.vec3(0.0, 142.0, 5.0),
+        "right_shoulder_pivot": glm.vec3(32.0, 125.0, 0.0),
+        "left_shoulder_pivot": glm.vec3(-32.0, 125.0, 0.0),
+        "sitting_scale": 1.0 / 140.0,
+    },
+    "warrok": {
+        "id": "warrok",
+        "name": "Warrok Guardião",
+        "badge": "🐾 WARROK BASKERVILLE",
+        "role": "Guardião Cósmico Feroz",
+        "model_path": "Models/guide_warrok.glb",
+        "default_texture": "warrok_diffuse.png",
+        "camera_target": glm.vec3(0.0, 212.0, 18.0),
+        "camera_distance": 160.0,
+        "camera_pitch": 1.5,
+        "camera_yaw": 0.0,
+        "head_pivot": glm.vec3(0.0, 185.0, 10.0),
+        "right_shoulder_pivot": glm.vec3(45.0, 160.0, 0.0),
+        "left_shoulder_pivot": glm.vec3(-45.0, 160.0, 0.0),
+        "sitting_scale": 1.0 / 180.0,
+    },
+}
+
+
 class GuideRenderer:
     """
     Renderizador do personagem 3D com câmara e iluminação independentes da cena planetária.
     Pode desenhar numa janela Picture-in-Picture (PiP) ou sobre a interface gráfica.
+    Suporta variações em tempo real: Remy (Humano), Goblin, Mutant e Warrok.
     """
 
     MESH_TYPE_MAP = {
@@ -64,23 +133,37 @@ class GuideRenderer:
         "Shoes": 6,
     }
 
-    def __init__(self, model_path: str = "Models/guide_remy.glb"):
-        self.model_path = Path(model_path)
+    def __init__(self, model_path: str = "Models/guide_remy.glb", initial_character: str = "remy"):
         self.shader: Optional[Shader] = None
         self.model: Optional[GLBModel] = None
 
-        # Câmara independente do Baskerville
-        # Enquadra especificamente a cabeça e o rosto do apresentador cósmico
-        self.camera_target = glm.vec3(0.0, 326.0, 3.0)  # Foco na cabeça e olhos do apresentador
-        self.camera_distance = 68.0                     # Close-up perfeito da cabeça
-        self.camera_yaw = 0.0                           # Ângulo horizontal frontal
-        self.camera_pitch = 2.0                         # Ligeiro ângulo profissional
-        self.fov = 28.0                                 # Lente retrato de alta definição
+        self.current_character_id: str = initial_character
+        self.submeshes: List[Tuple[str, SubMeshGPU]] = []
+        self._character_cache: Dict[str, List[Tuple[str, SubMeshGPU]]] = {}
+        self._tex_cache: Dict[str, Texture] = {}
+
+        # Determina o personagem com base no model_path se fornecido explicitamente
+        for cid, prof in CHARACTER_PROFILES.items():
+            if Path(prof["model_path"]).name == Path(model_path).name:
+                self.current_character_id = cid
+                break
+
+        profile = CHARACTER_PROFILES.get(self.current_character_id, CHARACTER_PROFILES["remy"])
+        self.camera_target = glm.vec3(profile["camera_target"])
+        self.camera_distance = float(profile["camera_distance"])
+        self.camera_yaw = float(profile["camera_yaw"])
+        self.camera_pitch = float(profile["camera_pitch"])
+        self.fov = 28.0
+        self.head_pivot = glm.vec3(profile["head_pivot"])
+        self.right_shoulder_pivot = glm.vec3(profile["right_shoulder_pivot"])
+        self.left_shoulder_pivot = glm.vec3(profile["left_shoulder_pivot"])
+        self.sitting_scale = float(profile["sitting_scale"])
 
         self._init_gl()
+        self.set_character(self.current_character_id)
 
     def _init_gl(self) -> None:
-        """Compila o shader do guia e carrega o modelo 3D."""
+        """Compila o shader do guia."""
         vert_path = Path("shaders/guide.vert")
         frag_path = Path("shaders/guide.frag")
 
@@ -89,17 +172,39 @@ class GuideRenderer:
 
         self.shader = Shader(vert_path, frag_path)
 
-        if not self.model_path.exists():
-            raise FileNotFoundError(f"[GuideRenderer] Modelo não encontrado: {self.model_path}")
+    def set_character(self, character_id: str) -> None:
+        """Altera dinamicamente o modelo 3D, câmara e enquadramento do apresentador cósmico."""
+        if character_id not in CHARACTER_PROFILES:
+            character_id = "remy"
 
-        # O GLBModel existente carrega e instancia todos os VAOs, VBOs, EBOs e Texturas!
-        # Note que GLBModel normaliza para raio unitário por padrão, mas precisamos
-        # das coordenadas anatómicas originais para as deformações dos ossos.
-        # Vamos carregar o modelo preservando as coordenadas reais.
-        self._load_unnormalized_model()
+        self.current_character_id = character_id
+        profile = CHARACTER_PROFILES[character_id]
 
-    def _load_unnormalized_model(self) -> None:
-        """Carrega o modelo 3D preservando as dimensões anatómicas originais."""
+        self.camera_target = glm.vec3(profile["camera_target"])
+        self.camera_distance = float(profile["camera_distance"])
+        self.camera_yaw = float(profile["camera_yaw"])
+        self.camera_pitch = float(profile["camera_pitch"])
+        self.head_pivot = glm.vec3(profile["head_pivot"])
+        self.right_shoulder_pivot = glm.vec3(profile["right_shoulder_pivot"])
+        self.left_shoulder_pivot = glm.vec3(profile["left_shoulder_pivot"])
+        self.sitting_scale = float(profile["sitting_scale"])
+
+        if character_id not in self._character_cache:
+            self._character_cache[character_id] = self._load_character_model(character_id)
+
+        self.submeshes = self._character_cache[character_id]
+        print(f"[GuideRenderer] Modelo ativado: {profile['name']} ({profile['badge']})")
+
+    def _load_character_model(self, character_id: str) -> List[Tuple[str, SubMeshGPU]]:
+        """Carrega a malha e texturas correspondentes do modelo GLB do personagem."""
+        profile = CHARACTER_PROFILES[character_id]
+        model_path = Path(profile["model_path"])
+
+        if not model_path.exists():
+            print(f"[GuideRenderer] Aviso: Modelo {model_path} não encontrado, fallback para remy.")
+            profile = CHARACTER_PROFILES["remy"]
+            model_path = Path(profile["model_path"])
+
         import trimesh
         from OpenGL.GL import (
             glGenVertexArrays,
@@ -115,11 +220,9 @@ class GuideRenderer:
             GL_FLOAT,
         )
 
-        scene = trimesh.load(self.model_path, process=False)
-        self.submeshes: List[Tuple[str, SubMeshGPU]] = []
-
-        # Texturas em cache
-        tex_cache: Dict[str, Texture] = {}
+        scene = trimesh.load(model_path, process=False)
+        submeshes: List[Tuple[str, SubMeshGPU]] = []
+        default_tex_name = profile.get("default_texture", "Remy_Body_Diffuse.png")
 
         for node_name, geom in scene.geometry.items():
             if not isinstance(geom, trimesh.Trimesh):
@@ -163,13 +266,18 @@ class GuideRenderer:
 
             # Obter textura correspondente
             sub_texture: Optional[Texture] = None
-            tex_filename = f"Remy_{node_name}_Diffuse.png" if node_name in ["Shoes", "Tops", "Bottoms", "Hair"] else "Remy_Body_Diffuse.png"
+            if character_id == "remy":
+                tex_filename = f"Remy_{node_name}_Diffuse.png" if node_name in ["Shoes", "Tops", "Bottoms", "Hair"] else "Remy_Body_Diffuse.png"
+            else:
+                tex_filename = default_tex_name
+
             tex_path = Path("textures/guide") / tex_filename
 
             if tex_path.exists():
-                if tex_filename not in tex_cache:
-                    tex_cache[tex_filename] = TextureLoader.load(tex_path, fallback_key="guide")
-                sub_texture = tex_cache[tex_filename]
+                tex_key = str(tex_path)
+                if tex_key not in self._tex_cache:
+                    self._tex_cache[tex_key] = TextureLoader.load(tex_path, fallback_key="guide")
+                sub_texture = self._tex_cache[tex_key]
 
             is_transparent = node_name in ["Hair", "Eyelashes"]
             submesh_gpu = SubMeshGPU(
@@ -180,9 +288,10 @@ class GuideRenderer:
                 texture=sub_texture,
                 is_transparent=is_transparent
             )
-            self.submeshes.append((node_name, submesh_gpu))
+            submeshes.append((node_name, submesh_gpu))
 
-        print(f"[GuideRenderer] Modelo carregado com sucesso: {len(self.submeshes)} submalhas GPU prontas!")
+        print(f"[GuideRenderer] Modelo '{character_id}' carregado com sucesso: {len(submeshes)} submalhas GPU prontas!")
+        return submeshes
 
     def render(
         self,
@@ -243,12 +352,12 @@ class GuideRenderer:
 
         # Uniformes esqueléticos
         self.shader.set_mat4("uHeadRotation", skeletal_state.head_rotation)
-        self.shader.set_vec3("uHeadPivot", glm.vec3(0.0, 325.0, 3.0))
+        self.shader.set_vec3("uHeadPivot", self.head_pivot)
         self.shader.set_float("uBreathingScale", skeletal_state.breathing_scale)
         self.shader.set_mat4("uRightArmRotation", skeletal_state.right_arm_rotation)
-        self.shader.set_vec3("uRightShoulderPivot", glm.vec3(38.0, 280.0, 0.0))
+        self.shader.set_vec3("uRightShoulderPivot", self.right_shoulder_pivot)
         self.shader.set_mat4("uLeftArmRotation", skeletal_state.left_arm_rotation)
-        self.shader.set_vec3("uLeftShoulderPivot", glm.vec3(-38.0, 280.0, 0.0))
+        self.shader.set_vec3("uLeftShoulderPivot", self.left_shoulder_pivot)
 
         # Uniformes faciais e lip sync
         self.shader.set_float("uMouthOpen", facial_params.mouth_open)
@@ -303,7 +412,7 @@ class GuideRenderer:
 
         # Proporção da altura sentada em lótus sobre o planeta
         char_height_target = max(1.6, min(9.0, planet_radius * 0.46))
-        scale_val = char_height_target / 260.0
+        scale_val = char_height_target * self.sitting_scale
 
         model_mat = glm.mat4(1.0)
         # 1. Posiciona no topo da esfera do planeta
@@ -334,12 +443,12 @@ class GuideRenderer:
 
         # Uniformes esqueléticos
         self.shader.set_mat4("uHeadRotation", skeletal_state.head_rotation)
-        self.shader.set_vec3("uHeadPivot", glm.vec3(0.0, 325.0, 3.0))
+        self.shader.set_vec3("uHeadPivot", self.head_pivot)
         self.shader.set_float("uBreathingScale", skeletal_state.breathing_scale)
         self.shader.set_mat4("uRightArmRotation", skeletal_state.right_arm_rotation)
-        self.shader.set_vec3("uRightShoulderPivot", glm.vec3(38.0, 280.0, 0.0))
+        self.shader.set_vec3("uRightShoulderPivot", self.right_shoulder_pivot)
         self.shader.set_mat4("uLeftArmRotation", skeletal_state.left_arm_rotation)
-        self.shader.set_vec3("uLeftShoulderPivot", glm.vec3(-38.0, 280.0, 0.0))
+        self.shader.set_vec3("uLeftShoulderPivot", self.left_shoulder_pivot)
 
         # Uniformes faciais e lip sync
         self.shader.set_float("uMouthOpen", facial_params.mouth_open)
@@ -367,7 +476,10 @@ class GuideRenderer:
         glDisable(GL_DEPTH_TEST)
 
     def cleanup(self) -> None:
-        """Liberta buffers e recursos da GPU."""
-        for name, submesh in self.submeshes:
-            submesh.cleanup()
+        """Liberta buffers e recursos da GPU de todos os personagens carregados."""
+        for cid, mesh_list in self._character_cache.items():
+            for name, submesh in mesh_list:
+                submesh.cleanup()
+        self._character_cache.clear()
         self.submeshes.clear()
+        self._tex_cache.clear()

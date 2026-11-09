@@ -102,6 +102,11 @@ class GuideController:
         sec = self.lesson_manager.restart_current_section()
         self._speak_section(sec)
 
+    def speak_current_section(self) -> None:
+        """Reproduz a secção atual do gestor de lições."""
+        self.audio_player.stop()
+        self._speak_section(self.lesson_manager.current_section)
+
     def toggle_pause(self) -> None:
         """Alterna entre pausar e retomar a fala e animação."""
         if self.audio_player.is_playing():

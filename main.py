@@ -341,6 +341,7 @@ class SolarSimulatorApp:
         print(" ─── INTERFACE E GUIA VIRTUAL ───────────────────────────────────")
         print(" [I]           : Painel de informações do planeta selecionado")
         print(" [Saber Mais]  : Clique no botão do painel para o Guia sentar no planeta e falar!")
+        print(" [K]           : Alternar Variação do Personagem 3D (Remy / Goblin / Mutant / Warrok)")
         print(" [X]           : Fechar / Encerrar o Guia Virtual 3D")
         print(" [F1]          : Ecrã de ajuda e créditos completos")
         print("=" * 75 + "\n")
@@ -480,11 +481,8 @@ class SolarSimulatorApp:
                 self.camera_tracking = False
                 print(f"[Buraco Negro] Foco em: {bh.name}")
 
-                # Sentinela Travor apresenta o buraco negro se não estiver em exploração solo
-                if self.virtual_guide and not self.solo_exploration_mode:
-                    self.virtual_guide.open(bh.name)
-                    self.virtual_guide.controller.lesson_manager.set_planet("black_hole")
-                    self.guide_active = True
+                # Sentinela apresenta o buraco negro correspondente
+                self._trigger_black_hole_guide(bh.name)
 
         # ── [ALT] Frente a Frente com o Buraco Negro ──────────────────────────
         elif key in (glfw.KEY_LEFT_ALT, glfw.KEY_RIGHT_ALT):
@@ -513,11 +511,15 @@ class SolarSimulatorApp:
                     self.ui_manager.set_selected_body(None)
                 print(f"[Buraco Negro] FRENTE A FRENTE com {bh.name} a {self.camera.distance:.1f} UA!")
 
-                # Sentinela Travor apresenta o buraco negro se não estiver em exploração solo
-                if self.virtual_guide and not self.solo_exploration_mode:
-                    self.virtual_guide.open(bh.name)
-                    self.virtual_guide.controller.lesson_manager.set_planet("black_hole")
-                    self.guide_active = True
+                # Sentinela apresenta o buraco negro correspondente
+                self._trigger_black_hole_guide(bh.name)
+
+        # ── [K] Alternar Variação do Personagem 3D (Remy / Goblin / Mutant / Warrok)
+        elif key == glfw.KEY_K:
+            if self.virtual_guide:
+                new_char = self.virtual_guide.cycle_character()
+                prof = self.virtual_guide.current_profile
+                print(f"[Personagem 3D] Variação alternada para: {prof.get('name')} ({prof.get('badge')}) — {prof.get('role')}")
 
         # ── [L] Satélite + Foguetão Lunar ─────────────────────────────────────
         elif key == glfw.KEY_L:
@@ -703,13 +705,39 @@ class SolarSimulatorApp:
 
         # Ativa o apresentador 3D correspondente no canto superior direito
         self.solo_exploration_mode = False
+        from educational.planet_content import get_presenter_for
+        pres = get_presenter_for(planet_id)
+        char_id = pres.get("character", "remy")
+        self.virtual_guide.set_character(char_id)
         self.virtual_guide.open(planet_name)
         self.virtual_guide.controller.lesson_manager.set_planet(planet_id)
         self.guide_active = True
+        print(f"\n[{pres.get('name', 'Guia')}] ({pres.get('badge')}) no canto superior a apresentar {planet_name.upper()}!")
 
-        from educational.planet_content import get_presenter_for
-        pres = get_presenter_for(planet_id)
-        print(f"\n[{pres.get('name', 'Guia')}] Cabeça no canto superior a apresentar {planet_name.upper()}!")
+    def _trigger_black_hole_guide(self, bh_name: str) -> None:
+        """Ativa o Guia Virtual 3D com a secção científica exata do buraco negro correspondente."""
+        if not self.virtual_guide or self.solo_exploration_mode:
+            return
+
+        nl = bh_name.lower()
+        if "sagitário" in nl or "sagittarius a" in nl:
+            idx = 0
+        elif "m87" in nl:
+            idx = 1
+        elif "cygnus" in nl:
+            idx = 2
+        elif "gaia" in nl or "v404" in nl or "sagittarius b" in nl:
+            idx = 3
+        elif "gw" in nl or "espaço tremer" in nl or "gargantua" in nl or "gro" in nl or "anomalia" in nl:
+            idx = 4
+        else:
+            idx = 0
+
+        self.virtual_guide.set_character("mutant")
+        self.virtual_guide.open(bh_name)
+        self.virtual_guide.controller.lesson_manager.set_planet("black_hole", section_index=idx)
+        self.virtual_guide.controller.speak_current_section()
+        self.guide_active = True
 
     def _cycle_planet(self, reverse: bool = False) -> None:
         """Cicla para o próximo planeta ou anterior na ordem orbital natural."""
@@ -1112,9 +1140,9 @@ class SolarSimulatorApp:
                         "guide_active": self.guide_active,
                         "guide_info": {
                             "planet_name": self.solar_system.bodies[self.selected_body_id].name if (self.selected_body_id and self.selected_body_id in self.solar_system.bodies) else (self.bh_face_to_face or "Singularidade"),
-                            "presenter_badge": pres.get("badge", "🐾 BASKERVILLE"),
-                            "presenter_role": pres.get("role", "Apresentador Cósmico"),
-                            "presenter_name": pres.get("name", "Guia"),
+                            "presenter_badge": self.virtual_guide.current_profile.get("badge", pres.get("badge", "🐾 BASKERVILLE")) if self.virtual_guide else pres.get("badge", "🐾 BASKERVILLE"),
+                            "presenter_role": self.virtual_guide.current_profile.get("role", pres.get("role", "Apresentador Cósmico")) if self.virtual_guide else pres.get("role", "Apresentador Cósmico"),
+                            "presenter_name": self.virtual_guide.current_profile.get("name", pres.get("name", "Guia")) if self.virtual_guide else pres.get("name", "Guia"),
                             "title": self.virtual_guide.controller.lesson_manager.current_section.title if self.virtual_guide else "",
                             "text": self.virtual_guide.controller.lesson_manager.current_section.speech_text if self.virtual_guide else "",
                             "is_playing": self.virtual_guide.controller.audio_player.is_playing() if self.virtual_guide else False,

@@ -17,29 +17,62 @@ class AstronomicalVirtualGuide:
     sincronização labial e integração na interface gráfica do simulador.
     """
 
-    def __init__(self, model_path: str = "Models/guide_remy.glb"):
+    def __init__(self, model_path: str = "Models/guide_remy.glb", initial_character: str = "remy"):
         self.controller = GuideController("Terra")
         self.renderer: Optional[GuideRenderer] = None
         self._model_path = model_path
+        self._current_character: str = initial_character
         self._is_visible = False
 
-        # Dimensões da janela do guia (Picture-in-Picture elegante)
+        # Dimensões da janela do guia (Picture-in-Picture elegante ampliado)
         self.panel_x: int = 0
         self.panel_y: int = 0
-        self.panel_w: int = 380
-        self.panel_h: int = 480
+        self.panel_w: int = 360
+        self.panel_h: int = 420
 
     def initialize_gl(self) -> None:
         """Inicializa os recursos OpenGL do renderizador após o contexto GLFW estar ativo."""
         if self.renderer is None:
-            self.renderer = GuideRenderer(self._model_path)
+            self.renderer = GuideRenderer(self._model_path, initial_character=self._current_character)
+
+    @property
+    def current_character(self) -> str:
+        """Identificador do modelo 3D atual ('remy', 'goblin', 'mutant', 'warrok')."""
+        return self._current_character
+
+    @property
+    def current_profile(self) -> dict:
+        """Perfil visual, badge e papel do personagem ativo."""
+        from .guide_renderer import CHARACTER_PROFILES
+        return CHARACTER_PROFILES.get(self._current_character, CHARACTER_PROFILES["remy"])
+
+    def set_character(self, character_id: str) -> None:
+        """Define e troca a variação do personagem em tempo real."""
+        self._current_character = character_id
+        if self.renderer:
+            self.renderer.set_character(character_id)
+
+    def cycle_character(self) -> str:
+        """Alterna ciclicamente entre as variações: Remy -> Goblin -> Mutant -> Warrok -> Remy."""
+        from .guide_renderer import CHARACTER_PROFILES
+        keys = list(CHARACTER_PROFILES.keys())
+        try:
+            idx = keys.index(self._current_character)
+            next_idx = (idx + 1) % len(keys)
+        except ValueError:
+            next_idx = 0
+        new_char = keys[next_idx]
+        self.set_character(new_char)
+        return new_char
 
     @property
     def is_visible(self) -> bool:
         return self._is_visible
 
-    def open(self, planet_name: str = "Terra") -> None:
-        """Abre a apresentação do Guia Virtual para o planeta indicado."""
+    def open(self, planet_name: str = "Terra", character_id: Optional[str] = None) -> None:
+        """Abre a apresentação do Guia Virtual para o planeta indicado com o personagem escolhido."""
+        if character_id:
+            self.set_character(character_id)
         self._is_visible = True
         self.controller.planet_name = planet_name
         self.controller.activate()
@@ -77,8 +110,8 @@ class AstronomicalVirtualGuide:
 
         # Posicionamento no canto superior direito, logo abaixo da barra superior (HUD)
         # Em OpenGL, a origem da viewport (0,0) é no canto inferior esquerdo!
-        view_w = 260
-        view_h = 280
+        view_w = 360
+        view_h = 420
         view_x = int(screen_w - view_w - 20)
         view_y = int(screen_h - view_h - 55)
 

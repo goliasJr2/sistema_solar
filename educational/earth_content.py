@@ -23,16 +23,16 @@ class LessonSection:
 EARTH_LESSON_SECTIONS: List[LessonSection] = [
     LessonSection(
         id=1,
-        title="1. Introdução à Terra: O Nosso Oásis Cósmico",
-        summary="Apresentação do terceiro planeta a contar do Sol e o único porto de vida conhecido no cosmos.",
+        title="🌍 Terra, o nosso lar",
+        summary="O único lugar que conhecemos com vida, atmosfera protetora de 78% azoto e 21% oxigénio, oceanos estáveis e Lua.",
         speech_text=(
-            "Olá viajante cósmico! Sou a Tracy, a vossa guia astronómica pelo nosso oásis estelar: a Terra! "
-            "Situada a aproximadamente cento e cinquenta milhões de quilómetros do Sol, a Terra é o terceiro planeta "
-            "do Sistema Solar e o único lar com vida conhecido em todo o Universo. Vista do espaço profundo, "
-            "assemelha-se a um deslumbrante ponto azul pálido, protegido pela escuridão do vazio estelar."
+            "O único lugar que conhecemos com vida. "
+            "Atmosfera: 78% azoto, 21% oxigénio. Protege-nos da radiação e dos meteoritos, e mantém a temperatura média em cerca de 15 graus Celsius. "
+            "Singularidade: é o único planeta com água líquida estável à superfície, 71% coberta por oceanos, tectónica de placas e um campo magnético forte. "
+            "Lua: estabiliza o eixo de rotação, o que dá estações do ano regulares."
         ),
-        estimated_duration_sec=22.0,
-        keywords=["Terra", "Sistema Solar", "Terceiro Planeta", "Vida", "Ponto Azul"],
+        estimated_duration_sec=24.0,
+        keywords=["Terra", "Vida", "Atmosfera", "Oceanos", "Tectónica de Placas", "Lua"],
     ),
     LessonSection(
         id=2,
