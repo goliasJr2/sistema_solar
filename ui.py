@@ -309,7 +309,7 @@ class UIManager:
             bg_col = (35, 12, 50, 240)
             border_col = (195, 80, 255, 255)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
-            draw.text((x0 + 18, y0 + 10), "👁 FRENTE A FRENTE COM O BURACO NEGRO", fill=(230, 180, 255), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 10), "👁 SENTINELA TRAVOR: 'FRENTE A FRENTE COM A SINGULARIDADE'", fill=(230, 180, 255), font=self.font_subtitle)
             name_str = f"Singularidade: {alert.get('name', 'Buraco Negro')}  |  Distância: {alert.get('distance', 0.0):.1f} UA"
             draw.text((x0 + 18, y0 + 32), name_str, fill=(255, 255, 255), font=self.font_text)
             sub_str = "Prima [ALT] para o próximo buraco negro (8 no total)  |  [0] Sistema Solar"
@@ -319,7 +319,7 @@ class UIManager:
             bg_col = (48, 8, 12, 240)
             border_col = (255, 45, 45, 255)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
-            draw.text((x0 + 18, y0 + 10), "⚠ ALERTA DE PERIGO: DISTORÇÃO ESPAÇO-TEMPORAL DETETADA!", fill=(255, 65, 65), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 10), "⚠ SENTINELA TRAVOR: 'PERIGO: DISTORÇÃO ESPAÇO-TEMPORAL DETETADA!'", fill=(255, 65, 65), font=self.font_subtitle)
             draw.text((x0 + 18, y0 + 32), "Horizonte de eventos iminente à sua frente no espaço profundo!", fill=(255, 230, 230), font=self.font_text)
             sec_held = alert.get("progress_sec", 0.0)
             rem = max(0.0, 5.0 - sec_held)
@@ -330,7 +330,7 @@ class UIManager:
             bg_col = (25, 18, 38, 235)
             border_col = (255, 185, 40, 255)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
-            draw.text((x0 + 18, y0 + 10), "🌌 BURACO NEGRO VISÍVEL À SUA FRENTE!", fill=(255, 215, 60), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 10), "🌌 SENTINELA TRAVOR: 'BURACO NEGRO VISÍVEL À SUA FRENTE!'", fill=(255, 215, 60), font=self.font_subtitle)
             name_str = f"Singularidade: {alert.get('name', 'Cygnus X-1')}  |  Distância: {alert.get('distance', 0.0):.1f} UA"
             draw.text((x0 + 18, y0 + 32), name_str, fill=(245, 245, 250), font=self.font_text)
             sub_str = "Prima [ALT] agora para ficar Frente a Frente com o Buraco Negro!"
@@ -340,21 +340,21 @@ class UIManager:
             bg_col = (45, 6, 25, 245)
             border_col = (255, 30, 80, 255)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
-            draw.text((x0 + 18, y0 + 10), "⚠ VÓRTICE DE ATRAÇÃO GRAVITACIONAL — BURACO DE MINHOCA!", fill=(255, 55, 100), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 10), "🚨 SENTINELA TRAVOR: 'A SER SUGADO PARA A SINGULARIDADE!'", fill=(255, 55, 100), font=self.font_subtitle)
             grav_pct = int(alert.get("warp_factor", 0.5) * 100)
-            name_str = f"Singularidade: {alert.get('name', 'Buraco Negro')}  |  Gravidade Relativística: {grav_pct}%  |  Distância: {alert.get('distance', 0.0):.1f} UA"
+            name_str = f"Singularidade: {alert.get('name', 'Buraco Negro')}  |  Força Gravitacional: {grav_pct}%  |  Distância: {alert.get('distance', 0.0):.1f} UA"
             draw.text((x0 + 18, y0 + 32), name_str, fill=(255, 230, 240), font=self.font_text)
-            sub_str = "🔥 MANTENHA PREMIDO [SHIFT] PARA ACIONAR A PROPULSÃO WARP DE FUGA!"
+            sub_str = "🔥 INSTRUÇÃO DE FUGA: MANTENHA PREMIDO [SHIFT] PARA ACIONAR A PROPULSÃO WARP!"
             draw.text((x0 + 18, y0 + 54), sub_str, fill=(255, 220, 50), font=self.font_small)
 
         elif alert_type == "WARP_ESCAPE":
             bg_col = (8, 30, 48, 245)
             border_col = (40, 220, 255, 255)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
-            draw.text((x0 + 18, y0 + 10), "⚡ PROPULSÃO WARP DE FUGA ATIVA [SHIFT]", fill=(50, 230, 255), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 10), "⚡ SENTINELA TRAVOR: 'PROPULSÃO WARP DE ESCAPE ATIVA!'", fill=(50, 230, 255), font=self.font_subtitle)
             name_str = f"A romper o horizonte de eventos de {alert.get('name', 'Buraco Negro')}!  |  Distância: {alert.get('distance', 0.0):.1f} UA"
             draw.text((x0 + 18, y0 + 32), name_str, fill=(220, 250, 255), font=self.font_text)
-            sub_str = "Motores a impulsão máxima de escape relativístico contra o buraco de minhoca!"
+            sub_str = "Excelente manobra! Motores em empuxo máximo a romper a atração do buraco negro!"
             draw.text((x0 + 18, y0 + 54), sub_str, fill=(160, 255, 200), font=self.font_small)
 
         elif alert_type == "OUTSIDE_CHARGING":
@@ -364,7 +364,7 @@ class UIManager:
             border_col = (70, 140, 245, 220)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=8, fill=bg_col, outline=border_col, width=1)
             sec_held = alert.get("progress_sec", 0.0)
-            draw.text((x0 + 18, y0 + 8), "🚀 SAÍDA DO SISTEMA SOLAR EM CURSO", fill=(100, 185, 255), font=self.font_subtitle)
+            draw.text((x0 + 18, y0 + 8), "🚀 SENTINELA TRAVOR: 'SAÍDA DO SISTEMA SOLAR EM CURSO'", fill=(100, 185, 255), font=self.font_subtitle)
             sub_str = f"Avanço no vazio cósmico: {sec_held:.1f}s / 5.0s (Mantenha premido [▲ Seta Cima] para acionar alerta)"
             draw.text((x0 + 18, y0 + 29), sub_str, fill=(200, 220, 255), font=self.font_small)
 
@@ -373,7 +373,7 @@ class UIManager:
             bg_col = (48, 8, 12, 235) if is_crit else (26, 12, 18, 220)
             border_col = (255, 45, 45, 255) if is_crit else (255, 145, 40, 240)
             draw.rounded_rectangle([x0, y0, x1, y1], radius=10, fill=bg_col, outline=border_col, width=2)
-            title = "⚠ ALERTA CRÍTICO: HORIZONTE DE EVENTOS PRÓXIMO!" if is_crit else "⚠ AVISO: CAMPO DE ATRAÇÃO GRAVITACIONAL"
+            title = "⚠ SENTINELA TRAVOR: 'HORIZONTE DE EVENTOS PRÓXIMO!'" if is_crit else "⚠ SENTINELA TRAVOR: 'AVISO: CAMPO DE ATRAÇÃO GRAVITACIONAL'"
             title_col = (255, 65, 65) if is_crit else (255, 185, 45)
             draw.text((x0 + 18, y0 + 10), title, fill=title_col, font=self.font_subtitle)
             name_str = f"Singularidade Detetada: {alert.get('name', 'Buraco Negro')}"
@@ -430,16 +430,21 @@ class UIManager:
         atmos = str(data.get("atmosphere", "N/A"))
         draw.text((x0 + 20, curr_y + 28), atmos, fill=(120, 220, 180), font=self.font_small)
 
-        # Botão "🐾 Saber Mais" — ativa a cabeça do Baskerville no canto superior a apresentar o planeta
+        # Botão de Apresentação — ativa a cabeça 3D do personagem correspondente
+        from educational.planet_content import get_presenter_for
+        body_id = data.get("id", data.get("name", "").lower())
+        pres = get_presenter_for(body_id)
+        pres_name = pres.get("name", "Guia")
+
         btn_w, btn_h = 220, 36
         btn_x0 = x0 + (self.panel_width - btn_w) // 2
         btn_y0 = y1 - btn_h - 12
         btn_x1 = btn_x0 + btn_w
         btn_y1 = btn_y0 + btn_h
 
-        btn_fill = (120, 35, 45, 240) if is_guide_active else (20, 75, 125, 240)
+        btn_fill = (130, 35, 45, 240) if is_guide_active else (20, 75, 125, 240)
         btn_border = (255, 90, 100, 255) if is_guide_active else (70, 190, 255, 255)
-        btn_text = "✖ Fechar Baskerville" if is_guide_active else "🐾 Saber Mais (Baskerville)"
+        btn_text = f"✖ Fechar (Modo Solo)" if is_guide_active else f"🐾 Saber Mais ({pres_name})"
 
         draw.rounded_rectangle(
             [btn_x0, btn_y0, btn_x1, btn_y1],
@@ -543,7 +548,7 @@ class UIManager:
         cy += 5
         scale_cmds = [
             ("[F2] Galáxia      [F3] Região Estelar      [F4] Sistema Solar      [ENTER] Superfície", ""),
-            ("[I] Painel de Informações       [F1] Ajuda       [ESC] Voltar / Sair", ""),
+            ("[U] Mudo/Som Voz     [X] Modo Solo (Exploração Solitária)     [I] Informações     [F1] Ajuda", ""),
         ]
         for key, desc in scale_cmds:
             draw.text((x0 + 30, cy), key, fill=(180, 230, 255), font=self.font_small)
@@ -556,7 +561,7 @@ class UIManager:
         draw.text((x0 + 30, cy + 23), "Prima [F1] para fechar este ecrã de ajuda.", fill=(180, 210, 255), font=self.font_small)
 
     def _draw_baskerville_frame(self, draw: ImageDraw.ImageDraw, info: dict) -> None:
-        """Desenha a moldura de alta tecnologia no canto superior direito para a cabeça 3D do Baskerville."""
+        """Desenha a moldura de alta tecnologia no canto superior direito para a cabeça 3D do personagem apresentador."""
         # Alinhado exatamente com a viewport 3D OpenGL (260 x 280 px)
         view_w = 260
         view_h = 280
@@ -564,6 +569,9 @@ class UIManager:
         y0 = 55
         x1 = x0 + view_w
         y1 = y0 + view_h
+
+        badge = info.get("presenter_badge", "🐾 BASKERVILLE")
+        role = info.get("presenter_role", "Apresentador Cósmico")
 
         # Contorno exterior elegante estilo sci-fi com cantos arredondados
         draw.rounded_rectangle(
@@ -581,10 +589,10 @@ class UIManager:
             outline=(60, 140, 220, 200),
             width=1,
         )
-        draw.text((x0 + 12, y0 + 6), "🐾 BASKERVILLE", fill=(255, 215, 80), font=self.font_subtitle)
-        draw.text((x0 + 12, y0 + 22), "Cão de Caça dos Baskerville", fill=(160, 210, 250), font=self.font_small)
+        draw.text((x0 + 12, y0 + 6), badge, fill=(255, 215, 80), font=self.font_subtitle)
+        draw.text((x0 + 12, y0 + 22), role, fill=(160, 210, 250), font=self.font_small)
 
-        # Barra Inferior de Estado do Baskerville
+        # Barra Inferior de Estado do Apresentador
         planet_name = info.get("planet_name", "Planeta")
         draw.rounded_rectangle(
             [x0, y1 - 26, x1, y1],
@@ -594,8 +602,13 @@ class UIManager:
             width=1,
         )
         is_playing = info.get("is_playing", True)
-        status_dot = "● A narrar..." if is_playing else "❚❚ Pausa"
-        status_color = (80, 240, 140) if is_playing else (255, 200, 70)
+        is_muted = info.get("is_muted", False)
+        if is_muted:
+            status_dot = "🔇 Silenciado [U]"
+            status_color = (255, 170, 70)
+        else:
+            status_dot = "● A narrar..." if is_playing else "❚❚ Pausa"
+            status_color = (80, 240, 140) if is_playing else (255, 200, 70)
         draw.text((x0 + 10, y1 - 20), f"{status_dot} {planet_name.upper()}", fill=status_color, font=self.font_small)
 
     def _draw_guide_speech_box(self, draw: ImageDraw.ImageDraw, info: dict) -> None:
@@ -618,10 +631,12 @@ class UIManager:
             width=2,
         )
 
-        # Cabeçalho do Baskerville
+        # Cabeçalho do Apresentador
         planet_name = info.get("planet_name", "Planeta")
         title = info.get("title", "Apresentação Cósmica")
-        header_text = f"🐾 BASKERVILLE (Cão de Caça dos Baskerville)  |  {planet_name.upper()}  —  {title}"
+        badge = info.get("presenter_badge", "🐾 BASKERVILLE")
+        role = info.get("presenter_role", "Guia Cósmico")
+        header_text = f"{badge} ({role})  |  {planet_name.upper()}  —  {title}"
         draw.text((x0 + 18, y0 + 12), header_text, fill=(255, 215, 80), font=self.font_subtitle)
         draw.line([(x0 + 18, y0 + 34), (x1 - 18, y0 + 34)], fill=(40, 75, 130), width=1)
 
@@ -637,9 +652,14 @@ class UIManager:
 
         # Barra de rodapé com atalhos e estado
         is_playing = info.get("is_playing", True)
-        status_str = "● A narrar..." if is_playing else "❚❚ Pausa"
-        status_col = (80, 240, 140) if is_playing else (255, 180, 50)
+        is_muted = info.get("is_muted", False)
+        if is_muted:
+            status_str = "🔇 Áudio Silenciado"
+            status_col = (255, 170, 70)
+        else:
+            status_str = "● A narrar..." if is_playing else "❚❚ Pausa"
+            status_col = (80, 240, 140) if is_playing else (255, 180, 50)
         draw.text((x0 + 20, y1 - 22), status_str, fill=status_col, font=self.font_small)
 
-        controls_str = "[ENTER] Próxima Seção  |  [X] Fechar Baskerville  |  [I] Informações"
-        draw.text((x1 - 420, y1 - 22), controls_str, fill=(160, 190, 230), font=self.font_small)
+        controls_str = "[ENTER] Próx. Seção  |  [U] Mudo / Som  |  [X] Modo Solo  |  [I] Informações"
+        draw.text((x1 - 490, y1 - 22), controls_str, fill=(160, 190, 230), font=self.font_small)

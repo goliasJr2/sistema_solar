@@ -10,6 +10,75 @@ from typing import List, Dict
 from .earth_content import LessonSection, EARTH_LESSON_SECTIONS
 
 
+PRESENTERS_CONFIG: Dict[str, dict] = {
+    "earth": {
+        "name": "Tracy",
+        "title": "Guia Astronómica Terrestre",
+        "badge": "👩‍🚀 TRACY",
+        "role": "Apresentadora do Lar Cósmico",
+    },
+    "mercury": {
+        "name": "Tracy",
+        "title": "Apresentadora do Mensageiro Veloz",
+        "badge": "👩‍🚀 TRACY",
+        "role": "Especialista em Planetas Interiores",
+    },
+    "venus": {
+        "name": "Tracy",
+        "title": "Apresentadora de Mundos Extremos",
+        "badge": "👩‍🚀 TRACY",
+        "role": "Investigadora da Atmosfera de Vénus",
+    },
+    "mars": {
+        "name": "Kayden",
+        "title": "Explorador Marciano",
+        "badge": "🚀 KAYDEN",
+        "role": "Desbravador do Planeta Vermelho",
+    },
+    "uranus": {
+        "name": "Kayden",
+        "title": "Explorador de Gigantes de Gelo",
+        "badge": "🚀 KAYDEN",
+        "role": "Investigador de Mundos Inclinados",
+    },
+    "jupiter": {
+        "name": "Travor",
+        "title": "Comandante de Titãs Gasosos",
+        "badge": "🛡️ TRAVOR",
+        "role": "Comandante da Frota Joviana",
+    },
+    "saturn": {
+        "name": "Travor",
+        "title": "Comandante das Joias Aneladas",
+        "badge": "🛡️ TRAVOR",
+        "role": "Guardião dos Anéis de Saturno",
+    },
+    "neptune": {
+        "name": "Yin Yang",
+        "title": "Mestre dos Ventos Cósmicos",
+        "badge": "☯️ YIN YANG",
+        "role": "Filósofo das Fronteiras Cósmicas",
+    },
+    "sun": {
+        "name": "Baskerville",
+        "title": "O Cão de Caça dos Baskerville",
+        "badge": "🐾 BASKERVILLE",
+        "role": "Farejador do Fogo Solar",
+    },
+    "black_hole": {
+        "name": "Travor",
+        "title": "Sentinela do Vazio & Buracos Negros",
+        "badge": "🛡️ SENTINELA TRAVOR",
+        "role": "Defesa & Escape Gravitacional",
+    },
+}
+
+
+def get_presenter_for(body_id: str) -> dict:
+    """Retorna os dados do apresentador responsável pelo corpo celeste ou singularidade."""
+    return PRESENTERS_CONFIG.get(body_id or "", PRESENTERS_CONFIG["earth"])
+
+
 PLANET_LESSONS: Dict[str, List[LessonSection]] = {
 
     # ── TERRA ─────────────────────────────────────────────────────────────────
@@ -70,11 +139,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Mercúrio: O Mensageiro Veloz",
             summary="O menor e mais interior planeta do Sistema Solar, com órbita extremamente excêntrica e rápida.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos Mercúrio, o planeta mais veloz e "
-                "próximo do Sol! Com apenas quatro mil oitocentos e setenta e nove quilómetros de diâmetro, é ligeiramente "
-                "maior do que a nossa Lua. Orbita o Sol a cinquenta e oito milhões de quilómetros, completando uma volta "
-                "completa em apenas oitenta e oito dias. A sua superfície rochosa está coberta de crateras ancestrais e escarpas "
-                "gigantescas formadas pelo arrefecimento do seu núcleo metálico."
+                "Olá viajantes cósmicos! Sou a Tracy, a vossa guia em Mercúrio: o planeta mais veloz e próximo do Sol! "
+                "Com apenas quatro mil oitocentos e setenta e nove quilómetros de diâmetro, é ligeiramente maior do que "
+                "a nossa Lua. Orbita o Sol a cinquenta e oito milhões de quilómetros, completando uma volta completa em apenas "
+                "oitenta e oito dias. A sua superfície rochosa está coberta de crateras ancestrais e escarpas gigantescas!"
             ),
             estimated_duration_sec=23.0,
             keywords=["Mercúrio", "Planeta Interior", "Crateras", "Órbita", "Rupes"],
@@ -118,10 +186,9 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Vénus: O Planeta Gémeo Infernal",
             summary="Vénus é o planeta mais brilhante do céu noturno e o mais quente do Sistema Solar.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Farejei Vénus: o planeta mais quente e infernal "
-                "de todo o Sistema Solar! Embora tenha tamanho semelhante à Terra com doze mil cento e quatro quilómetros "
-                "de diâmetro, a sua superfície atinge escaldantes quatrocentos e sessenta e cinco graus Celsius, suficiente "
-                "para derreter chumbo instantaneamente! É o astro mais brilhante do nosso céu noturno logo após a Lua."
+                "Aqui é a Tracy! Bem-vindos ao planeta mais quente e denso: Vénus! Embora tenha dimensões muito semelhantes "
+                "às da Terra com doze mil cento e quatro quilómetros de diâmetro, a sua atmosfera asfixiante de dióxido de carbono "
+                "cria um efeito de estufa descontrolado, elevando a temperatura superficial a quatrocentos e sessenta e cinco graus!"
             ),
             estimated_duration_sec=23.0,
             keywords=["Vénus", "Planeta Gémeo", "Temperatura", "Mais Quente", "Estrela da Manhã"],
@@ -165,10 +232,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Marte: O Planeta Vermelho",
             summary="Marte é o quarto planeta, com metade do diâmetro da Terra e marcas de imenso vulcanismo e canyons.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Farejei rastros no misterioso Planeta Vermelho: Marte! "
-                "Com seis mil setecentos e setenta e nove quilómetros de diâmetro — cerca de metade do tamanho da Terra — "
-                "Marte abriga o colossal vulcão Olympus Mons, a maior montanha do Sistema Solar com vinte e dois quilómetros "
-                "de altitude! A sua coloração avermelhada fascinante vem do óxido de ferro e ferrugem na areia."
+                "Saudações marcianas! Sou o Kayden, o vosso explorador em Marte: o lendário Planeta Vermelho! "
+                "Com seis mil setecentos e setenta e nove quilómetros de diâmetro, Marte abriga a montanha mais alta "
+                "de todo o Sistema Solar: o vulcão Olympus Mons com vinte e dois quilómetros de altitude! "
+                "O solo avermelhado é rico em óxido de ferro, testemunha de eras vulcânicas e rios ancestrais."
             ),
             estimated_duration_sec=23.0,
             keywords=["Marte", "Olympus Mons", "Óxido de Ferro", "Fobos", "Deimos"],
@@ -213,10 +280,9 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Júpiter: O Rei dos Planetas",
             summary="Júpiter é o maior planeta do Sistema Solar, com massa equivalente a 318 Terras.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos o verdadeiro Rei dos Planetas: Júpiter! "
+                "Contemplem o titã colossal! Sou o Travor, comandante da frota diante do majestoso Júpiter! "
                 "Com cento e quarenta e dois mil quilómetros de diâmetro — caberiam mais de mil e trezentas Terras no seu interior! "
-                "Júpiter tem mais do que o dobro da massa de todos os outros planetas juntos e comanda uma colossal corte de "
-                "mais de noventa e cinco luas fascinantes, incluindo as quatro grandes luas galileanas descobertas em 1610!"
+                "Júpiter tem mais do que o dobro da massa de todos os outros planetas juntos e governa mais de noventa e cinco luas!"
             ),
             estimated_duration_sec=24.0,
             keywords=["Júpiter", "Maior Planeta", "Luas Galileanas", "Io", "Europa"],
@@ -260,10 +326,9 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Saturno: A Joia do Sistema Solar",
             summary="Saturno é famoso pelos seus magníficos anéis e é o único planeta menos denso do que a água.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos a mais espetacular joia do cosmos: Saturno! "
+                "Maravilhem-se! Sou o Travor, ao vosso dispor perante a maior joia do Sistema Solar: Saturno! "
                 "Com cento e vinte mil quilómetros de diâmetro e anéis deslumbrantes que se estendem por quase trezentos mil "
-                "quilómetros, feitos de fragmentos puros de gelo e rocha! Sabiam que a densidade média de Saturno é tão baixa "
-                "que se houvesse um oceano gigante no espaço, ele flutuaria como uma bola na água?!"
+                "quilómetros, feitos de fragmentos puros de gelo e rocha! A densidade média de Saturno é tão baixa que flutuaria na água!"
             ),
             estimated_duration_sec=23.0,
             keywords=["Saturno", "Anéis", "Gelo", "Densidade Baixa", "Espetacular"],
@@ -309,10 +374,9 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Úrano: O Planeta Deitado",
             summary="Úrano órbita o Sol praticamente de lado, com uma inclinação axial de 97,8 graus.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos o planeta mais excêntrico de todos: Úrano! "
-                "Com cinquenta e um mil quilómetros de diâmetro e manto de gelo cósmico, Úrano roda completamente deitado, com "
-                "uma inclinação inacreditável de quase noventa e oito graus! Uma colisão primordial no passado fê-lo rodar como "
-                "um barril a rolar pelo espaço em torno do Sol!"
+                "Aqui é o Kayden! Olhem para Úrano: o gigante de gelo mais rebelde do sistema solar! "
+                "Com cinquenta e um mil quilómetros de diâmetro e manto de gelo cósmico, Úrano roda completamente deitado, "
+                "com uma inclinação inacreditável de quase noventa e oito graus! Rola pelo espaço como um barril em órbita!"
             ),
             estimated_duration_sec=23.0,
             keywords=["Úrano", "Inclinação Axial", "Gigante de Gelo", "97.8 Graus", "Colisão Primordial"],
@@ -356,10 +420,9 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Neptuno: O Gigante do Vento",
             summary="Neptuno é o planeta mais distante do Sol, com os ventos mais fortes do Sistema Solar.",
             speech_text=(
-                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Chegámos aos confins gelados do sistema: Neptuno! "
+                "Equilíbrio nas profundezas do cosmos! Sou o Yin Yang, explorando as tempestades supersónicas de Neptuno! "
                 "Situado a trinta vezes a distância da Terra ao Sol, este gigante azul-cobalto de quarenta e nove mil "
-                "quilómetros de diâmetro foi descoberto pela força pura da matemática! Prepara o casaco porque aqui os ventos "
-                "ultrapassam inacreditáveis dois mil e cem quilómetros por hora!"
+                "quilómetros de diâmetro foi descoberto pela força pura da matemática! Aqui os ventos atingem 2.100 km/h!"
             ),
             estimated_duration_sec=24.0,
             keywords=["Neptuno", "Planeta Mais Distante", "Descoberta Matemática", "Le Verrier", "30 UA"],
@@ -396,6 +459,47 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             ),
             estimated_duration_sec=27.0,
             keywords=["Tritão", "Órbita Retrógrada", "Geysers", "Cinturão de Kuiper", "Decaimento Orbital"],
+        ),
+    ],
+
+    # ── BURACOS NEGROS / SINGULARIDADES CÓSMICAS ──────────────────────────────
+    "black_hole": [
+        LessonSection(
+            id=1,
+            title="1. Buracos Negros: Singularidades e Curvatura Infinita",
+            summary="Regiões do espaço-tempo onde a gravidade é tão extrema que nada, nem a luz, consegue escapar.",
+            speech_text=(
+                "Atenção máxima, tripulante! Sou o Travor, Sentinela do Vazio. Estamos perante uma das entidades mais "
+                "assombrosas do cosmos: um Buraco Negro! Formado pelo colapso de estrelas supermassivas, toda a sua massa "
+                "está comprimida numa singularidade de densidade infinita. A curvatura do espaço-tempo aqui distorce a luz "
+                "das estrelas pelo impressionante efeito de lente gravitacional!"
+            ),
+            estimated_duration_sec=25.0,
+            keywords=["Buraco Negro", "Singularidade", "Gravidade Extrema", "Lente Gravitacional"],
+        ),
+        LessonSection(
+            id=2,
+            title="2. O Horizonte de Eventos e Atração Relativística",
+            summary="A fronteira do não-retorno: a velocidade de escape excede a velocidade da luz.",
+            speech_text=(
+                "O perímetro negro que observas é o Horizonte de Eventos. Esta é a fronteira definitiva do universo: "
+                "uma vez cruzada, a velocidade de escape supera a velocidade da luz. Quando te aproximas demasiado, "
+                "a força de maré provoca espargueteificação na matéria. Permanece em alerta vermelho!"
+            ),
+            estimated_duration_sec=24.0,
+            keywords=["Horizonte de Eventos", "Velocidade da Luz", "Espargueteificação", "Força de Maré"],
+        ),
+        LessonSection(
+            id=3,
+            title="3. Efeito Buraco de Minhoca e Instrução de Fuga",
+            summary="Instruções vitais de sobrevivência ao ser sugado pelo vórtice gravitacional.",
+            speech_text=(
+                "Instrução crítica de sobrevivência: se o vórtice de sucção gravitacional te começar a puxar, a câmara "
+                "sofrerá turbulência violenta. Para te safares desta armadilha, MANTÉM PREMIDO A TECLA SHIFT para acionar "
+                "a propulsão Warp nos motores de fuga! Repito: segura SHIFT para romper a gravidade e salvar a nave!"
+            ),
+            estimated_duration_sec=26.0,
+            keywords=["Buraco de Minhoca", "Propulsão Warp", "Tecla SHIFT", "Escape Relativístico"],
         ),
     ],
 }

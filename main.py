@@ -198,9 +198,11 @@ class SolarSimulatorApp:
         self.meteor_shower: Optional[MeteorShower] = None
         self.scale_manager: Optional[ScaleManager] = None
 
-        # ─── Guia Virtual 3D ───
+        # ─── Guia Virtual 3D & Apresentadores Cósmicos ───
         self.virtual_guide: Optional[AstronomicalVirtualGuide] = None
         self.guide_active: bool = False
+        self.is_guide_muted: bool = False             # Tecla [U]: silenciar áudio do guia
+        self.solo_exploration_mode: bool = False       # Tecla [X]: exploração galáctica solitária sem guias
 
         # ─── Rastreio do planeta selecionado ───
         self.selected_body_id: Optional[str] = "earth"
@@ -478,6 +480,12 @@ class SolarSimulatorApp:
                 self.camera_tracking = False
                 print(f"[Buraco Negro] Foco em: {bh.name}")
 
+                # Sentinela Travor apresenta o buraco negro se não estiver em exploração solo
+                if self.virtual_guide and not self.solo_exploration_mode:
+                    self.virtual_guide.open(bh.name)
+                    self.virtual_guide.controller.lesson_manager.set_planet("black_hole")
+                    self.guide_active = True
+
         # ── [ALT] Frente a Frente com o Buraco Negro ──────────────────────────
         elif key in (glfw.KEY_LEFT_ALT, glfw.KEY_RIGHT_ALT):
             self.show_blackholes = True
@@ -504,6 +512,12 @@ class SolarSimulatorApp:
                 if self.ui_manager:
                     self.ui_manager.set_selected_body(None)
                 print(f"[Buraco Negro] FRENTE A FRENTE com {bh.name} a {self.camera.distance:.1f} UA!")
+
+                # Sentinela Travor apresenta o buraco negro se não estiver em exploração solo
+                if self.virtual_guide and not self.solo_exploration_mode:
+                    self.virtual_guide.open(bh.name)
+                    self.virtual_guide.controller.lesson_manager.set_planet("black_hole")
+                    self.guide_active = True
 
         # ── [L] Satélite + Foguetão Lunar ─────────────────────────────────────
         elif key == glfw.KEY_L:
@@ -619,14 +633,27 @@ class SolarSimulatorApp:
         elif key == glfw.KEY_I:
             self.ui_manager.toggle_info_panel()
 
-        # ── [X] Fechar o Guia Virtual ─────────────────────────────────────────
+        # ── [U] Mutar / Silenciar Áudio do Apresentador ───────────────────────
+        elif key == glfw.KEY_U:
+            self.is_guide_muted = not self.is_guide_muted
+            if self.virtual_guide:
+                self.virtual_guide.controller.toggle_mute()
+            status_txt = "SILENCIADO (Mudo)" if self.is_guide_muted else "SOM ATIVO"
+            print(f"[Áudio] Apresentador {status_txt}.")
+
+        # ── [X] Alternar Modo Solo (Exploração Galáctica Solitária) ───────────
         elif key == glfw.KEY_X:
-            if self.virtual_guide and self.guide_active:
+            if self.guide_active and self.virtual_guide:
                 self.virtual_guide.close()
                 self.guide_active = False
+                self.solo_exploration_mode = True
                 if self.ui_manager:
                     self.ui_manager.show_info_panel = True
-                print("[Guia Virtual] Apresentação encerrada.")
+                print("[Modo Solo] Exploração galáctica solitária ativada. Apresentadores recolhidos.")
+            else:
+                self.solo_exploration_mode = not self.solo_exploration_mode
+                status_txt = "ATIVADA (Sem apresentadores)" if self.solo_exploration_mode else "DESATIVADA"
+                print(f"[Modo Solo] Exploração galáctica solitária {status_txt}.")
 
         # ── [F1] Ajuda ────────────────────────────────────────────────────────
         elif key == glfw.KEY_F1:
@@ -647,14 +674,14 @@ class SolarSimulatorApp:
             self.camera._update_camera_vectors()
             print(f"[Seleção] Foco → {body.name} (Rastreamento ativo)")
 
-            # Se o Baskerville estiver ativo, atualiza a sua narração para o novo planeta selecionado
-            if self.virtual_guide and self.guide_active:
+            # Se o apresentador estiver ativo e não em modo solo, atualiza para o novo planeta selecionado
+            if self.virtual_guide and self.guide_active and not self.solo_exploration_mode:
                 self.virtual_guide.open(body.name)
                 self.virtual_guide.controller.lesson_manager.set_planet(body_id)
 
     def _activate_guide_on_planet(self) -> None:
         """
-        Ativa ou fecha o Baskerville (cabeça no canto superior a apresentar o planeta).
+        Ativa ou fecha o apresentador 3D (cabeça no canto superior a apresentar o planeta).
         """
         if not self.selected_body_id or not self.virtual_guide:
             return
@@ -666,19 +693,23 @@ class SolarSimulatorApp:
         planet_name = body.name
         planet_id = self.selected_body_id
 
-        # Alternar (toggle): se já estiver a narrar, fechar
+        # Alternar (toggle): se já estiver a narrar, fechar e ativar exploração solo
         if self.guide_active:
             self.virtual_guide.close()
             self.guide_active = False
-            print(f"[Baskerville] Apresentação de {planet_name.upper()} encerrada.")
+            self.solo_exploration_mode = True
+            print(f"[Apresentador] Apresentação de {planet_name.upper()} encerrada. Modo Solo ativo.")
             return
 
-        # Ativa a cabeça 3D do Baskerville no canto superior direito
+        # Ativa o apresentador 3D correspondente no canto superior direito
+        self.solo_exploration_mode = False
         self.virtual_guide.open(planet_name)
         self.virtual_guide.controller.lesson_manager.set_planet(planet_id)
         self.guide_active = True
 
-        print(f"\n[Baskerville] Cabeça no canto superior a apresentar {planet_name.upper()}!")
+        from educational.planet_content import get_presenter_for
+        pres = get_presenter_for(planet_id)
+        print(f"\n[{pres.get('name', 'Guia')}] Cabeça no canto superior a apresentar {planet_name.upper()}!")
 
     def _cycle_planet(self, reverse: bool = False) -> None:
         """Cicla para o próximo planeta ou anterior na ordem orbital natural."""
@@ -1056,6 +1087,10 @@ class SolarSimulatorApp:
 
             # 13. Interface 2D — HUD + Painel de Informações + Legendas Pedagógicas
             if self.ui_manager:
+                from educational.planet_content import get_presenter_for
+                curr_target = self.selected_body_id if self.selected_body_id else ("black_hole" if self.bh_face_to_face else "earth")
+                pres = get_presenter_for(curr_target)
+
                 self.ui_manager.draw(
                     is_paused=self.is_paused,
                     time_scale=self.time_scale_days_per_sec,
@@ -1076,10 +1111,15 @@ class SolarSimulatorApp:
                         "black_hole_alert": self.current_black_hole_alert,
                         "guide_active": self.guide_active,
                         "guide_info": {
-                            "planet_name": self.solar_system.bodies[self.selected_body_id].name if (self.selected_body_id and self.selected_body_id in self.solar_system.bodies) else "",
+                            "planet_name": self.solar_system.bodies[self.selected_body_id].name if (self.selected_body_id and self.selected_body_id in self.solar_system.bodies) else (self.bh_face_to_face or "Singularidade"),
+                            "presenter_badge": pres.get("badge", "🐾 BASKERVILLE"),
+                            "presenter_role": pres.get("role", "Apresentador Cósmico"),
+                            "presenter_name": pres.get("name", "Guia"),
                             "title": self.virtual_guide.controller.lesson_manager.current_section.title if self.virtual_guide else "",
                             "text": self.virtual_guide.controller.lesson_manager.current_section.speech_text if self.virtual_guide else "",
                             "is_playing": self.virtual_guide.controller.audio_player.is_playing() if self.virtual_guide else False,
+                            "is_muted": self.is_guide_muted,
+                            "solo_mode": self.solo_exploration_mode,
                         } if self.guide_active else None,
                     },
                 )
