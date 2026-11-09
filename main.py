@@ -2,7 +2,10 @@
 ===============================================================================
 PROJETO: Simulador Astronómico Inteligente 3D (Grupo 1)
 DISCIPLINA: Computação Gráfica
-AUTOR: Engenheiro Sénior de Computação Gráfica
+AUTOR: Yhassine Diogo Carlos,
+AUTOR: Marcos Golias David,
+AUTOR: Agnelia Seno,
+AUTOR: Usseno Alfredo Bazima
 
 REQUISITOS OBRIGATÓRIOS IMPLEMENTADOS (Fase 1):
   [1] Rotação planetária individual (eixo, período e inclinação axial reais)
@@ -79,8 +82,7 @@ GUIA COMPLETO DE CONTROLOS DE TECLADO:
 
 import sys
 import time
-import random
-from pathlib import Path
+# from pathlib import Path
 from typing import Optional
 import glm
 import glfw
@@ -120,7 +122,7 @@ from galaxy import SpiralGalaxy
 from satellites import EarthSatellite, LunarRocket
 from meteors import MeteorShower
 from scale_manager import ScaleManager, ScaleLevel
-from guide.virtual_guide import AstronomicalVirtualGuide
+from characters import PlanetCharacters
 
 
 class CameraMode:
@@ -197,12 +199,7 @@ class SolarSimulatorApp:
         self.lunar_rocket: Optional[LunarRocket] = None
         self.meteor_shower: Optional[MeteorShower] = None
         self.scale_manager: Optional[ScaleManager] = None
-
-        # ─── Guia Virtual 3D & Apresentadores Cósmicos ───
-        self.virtual_guide: Optional[AstronomicalVirtualGuide] = None
-        self.guide_active: bool = False
-        self.is_guide_muted: bool = False             # Tecla [U]: silenciar áudio do guia
-        self.solo_exploration_mode: bool = False       # Tecla [X]: exploração galáctica solitária sem guias
+        self.planet_characters: Optional[PlanetCharacters] = None  # Personagem apresentador de cada planeta
 
         # ─── Rastreio do planeta selecionado ───
         self.selected_body_id: Optional[str] = "earth"
@@ -277,10 +274,12 @@ class SolarSimulatorApp:
         print("[Simulador] A carregar Sistema Solar (planetas, luas, texturas e modelos 3D)...")
         self.starfield = Starfield(num_stars=3500, radius=4000.0)
         self.solar_system = SolarSystem(textures_dir=TEXTURES_DIR, models_dir=MODELS_DIR)
+        self.planet_characters = PlanetCharacters(base_dir=BASE_DIR, shaders_dir=SHADERS_DIR)
 
         print("[Simulador] A inicializar interface de utilizador (UI)...")
         self.ui_manager = UIManager(self.width, self.height, self.ui_shader)
         self.ui_manager.set_selected_body(CELESTIAL_DATA["earth"])
+        self.ui_manager.set_presenter(self.planet_characters.info_for("earth"))
 
         print("[Simulador] A instanciar módulos cósmicos (Galáxia, Buracos Negros, Asteroides, Cometa...)...")
         self.galaxy = SpiralGalaxy(models_dir=MODELS_DIR, num_stars=250000)
@@ -291,10 +290,6 @@ class SolarSimulatorApp:
         self.lunar_rocket = LunarRocket(models_dir=MODELS_DIR)
         self.meteor_shower = MeteorShower(models_dir=MODELS_DIR, num_meteors=45)
         self.scale_manager = ScaleManager(self.camera)
-
-        print("[Simulador] A inicializar Guia Virtual 3D (Astronomical Virtual Guide)...")
-        self.virtual_guide = AstronomicalVirtualGuide(model_path=str(MODELS_DIR / "guide_remy.glb"))
-        self.virtual_guide.initialize_gl()
 
         print("[Simulador] Inicialização concluída! Sistema Solar em destaque.")
         self._print_controls_guide()
@@ -338,11 +333,8 @@ class SolarSimulatorApp:
         print(" [F4]          : Nível 3 — Sistema Solar (padrão)")
         print(" [ENTER]       : Nível 4 — Superfície do planeta selecionado")
         print(" [ESC]         : Voltar ao Sistema Solar / Sair")
-        print(" ─── INTERFACE E GUIA VIRTUAL ───────────────────────────────────")
+        print(" ─── INTERFACE ───────────────────────────────────────────────────")
         print(" [I]           : Painel de informações do planeta selecionado")
-        print(" [Saber Mais]  : Clique no botão do painel para o Guia sentar no planeta e falar!")
-        print(" [K]           : Alternar Variação do Personagem 3D (Remy / Goblin / Mutant / Warrok)")
-        print(" [X]           : Fechar / Encerrar o Guia Virtual 3D")
         print(" [F1]          : Ecrã de ajuda e créditos completos")
         print("=" * 75 + "\n")
 
@@ -371,15 +363,6 @@ class SolarSimulatorApp:
                 dx = xpos - self.mouse_press_pos[0]
                 dy = ypos - self.mouse_press_pos[1]
                 if (dx * dx + dy * dy) < 25.0:
-                    # Verificar se clicou no botão "🔭 Saber Mais"
-                    if (
-                        self.ui_manager
-                        and self.ui_manager.show_info_panel
-                        and self.ui_manager.selected_body_data
-                    ):
-                        if self.ui_manager.is_learn_more_clicked(xpos, ypos):
-                            self._activate_guide_on_planet()
-                            return
                     self._perform_ray_picking(xpos, ypos)
         elif button == glfw.MOUSE_BUTTON_RIGHT:
             self.mouse_right_down = (action == glfw.PRESS)
@@ -481,9 +464,6 @@ class SolarSimulatorApp:
                 self.camera_tracking = False
                 print(f"[Buraco Negro] Foco em: {bh.name}")
 
-                # Sentinela apresenta o buraco negro correspondente
-                self._trigger_black_hole_guide(bh.name)
-
         # ── [ALT] Frente a Frente com o Buraco Negro ──────────────────────────
         elif key in (glfw.KEY_LEFT_ALT, glfw.KEY_RIGHT_ALT):
             self.show_blackholes = True
@@ -510,16 +490,6 @@ class SolarSimulatorApp:
                 if self.ui_manager:
                     self.ui_manager.set_selected_body(None)
                 print(f"[Buraco Negro] FRENTE A FRENTE com {bh.name} a {self.camera.distance:.1f} UA!")
-
-                # Sentinela apresenta o buraco negro correspondente
-                self._trigger_black_hole_guide(bh.name)
-
-        # ── [K] Alternar Variação do Personagem 3D (Remy / Goblin / Mutant / Warrok)
-        elif key == glfw.KEY_K:
-            if self.virtual_guide:
-                new_char = self.virtual_guide.cycle_character()
-                prof = self.virtual_guide.current_profile
-                print(f"[Personagem 3D] Variação alternada para: {prof.get('name')} ({prof.get('badge')}) — {prof.get('role')}")
 
         # ── [L] Satélite + Foguetão Lunar ─────────────────────────────────────
         elif key == glfw.KEY_L:
@@ -635,28 +605,6 @@ class SolarSimulatorApp:
         elif key == glfw.KEY_I:
             self.ui_manager.toggle_info_panel()
 
-        # ── [U] Mutar / Silenciar Áudio do Apresentador ───────────────────────
-        elif key == glfw.KEY_U:
-            self.is_guide_muted = not self.is_guide_muted
-            if self.virtual_guide:
-                self.virtual_guide.controller.toggle_mute()
-            status_txt = "SILENCIADO (Mudo)" if self.is_guide_muted else "SOM ATIVO"
-            print(f"[Áudio] Apresentador {status_txt}.")
-
-        # ── [X] Alternar Modo Solo (Exploração Galáctica Solitária) ───────────
-        elif key == glfw.KEY_X:
-            if self.guide_active and self.virtual_guide:
-                self.virtual_guide.close()
-                self.guide_active = False
-                self.solo_exploration_mode = True
-                if self.ui_manager:
-                    self.ui_manager.show_info_panel = True
-                print("[Modo Solo] Exploração galáctica solitária ativada. Apresentadores recolhidos.")
-            else:
-                self.solo_exploration_mode = not self.solo_exploration_mode
-                status_txt = "ATIVADA (Sem apresentadores)" if self.solo_exploration_mode else "DESATIVADA"
-                print(f"[Modo Solo] Exploração galáctica solitária {status_txt}.")
-
         # ── [F1] Ajuda ────────────────────────────────────────────────────────
         elif key == glfw.KEY_F1:
             self.ui_manager.toggle_help()
@@ -667,6 +615,7 @@ class SolarSimulatorApp:
             body = self.solar_system.bodies[body_id]
             self.selected_body_id = body_id
             self.ui_manager.set_selected_body(body.data)
+            self.ui_manager.set_presenter(self.planet_characters.info_for(body_id))
             # Foca suavemente no corpo selecionado com distância proporcional ao tamanho
             self.camera.target = glm.vec3(body.current_position)
             if body_id == "sun":
@@ -675,69 +624,6 @@ class SolarSimulatorApp:
                 self.camera.distance = max(10.0, body.visual_radius * 5.5)
             self.camera._update_camera_vectors()
             print(f"[Seleção] Foco → {body.name} (Rastreamento ativo)")
-
-            # Se o apresentador estiver ativo e não em modo solo, atualiza para o novo planeta selecionado
-            if self.virtual_guide and self.guide_active and not self.solo_exploration_mode:
-                self.virtual_guide.open(body.name)
-                self.virtual_guide.controller.lesson_manager.set_planet(body_id)
-
-    def _activate_guide_on_planet(self) -> None:
-        """
-        Ativa ou fecha o apresentador 3D (cabeça no canto superior a apresentar o planeta).
-        """
-        if not self.selected_body_id or not self.virtual_guide:
-            return
-
-        body = self.solar_system.bodies.get(self.selected_body_id)
-        if not body:
-            return
-
-        planet_name = body.name
-        planet_id = self.selected_body_id
-
-        # Alternar (toggle): se já estiver a narrar, fechar e ativar exploração solo
-        if self.guide_active:
-            self.virtual_guide.close()
-            self.guide_active = False
-            self.solo_exploration_mode = True
-            print(f"[Apresentador] Apresentação de {planet_name.upper()} encerrada. Modo Solo ativo.")
-            return
-
-        # Ativa o apresentador 3D correspondente no canto superior direito
-        self.solo_exploration_mode = False
-        from educational.planet_content import get_presenter_for
-        pres = get_presenter_for(planet_id)
-        char_id = pres.get("character", "remy")
-        self.virtual_guide.set_character(char_id)
-        self.virtual_guide.open(planet_name)
-        self.virtual_guide.controller.lesson_manager.set_planet(planet_id)
-        self.guide_active = True
-        print(f"\n[{pres.get('name', 'Guia')}] ({pres.get('badge')}) no canto superior a apresentar {planet_name.upper()}!")
-
-    def _trigger_black_hole_guide(self, bh_name: str) -> None:
-        """Ativa o Guia Virtual 3D com a secção científica exata do buraco negro correspondente."""
-        if not self.virtual_guide or self.solo_exploration_mode:
-            return
-
-        nl = bh_name.lower()
-        if "sagitário" in nl or "sagittarius a" in nl:
-            idx = 0
-        elif "m87" in nl:
-            idx = 1
-        elif "cygnus" in nl:
-            idx = 2
-        elif "gaia" in nl or "v404" in nl or "sagittarius b" in nl:
-            idx = 3
-        elif "gw" in nl or "espaço tremer" in nl or "gargantua" in nl or "gro" in nl or "anomalia" in nl:
-            idx = 4
-        else:
-            idx = 0
-
-        self.virtual_guide.set_character("mutant")
-        self.virtual_guide.open(bh_name)
-        self.virtual_guide.controller.lesson_manager.set_planet("black_hole", section_index=idx)
-        self.virtual_guide.controller.speak_current_section()
-        self.guide_active = True
 
     def _cycle_planet(self, reverse: bool = False) -> None:
         """Cicla para o próximo planeta ou anterior na ordem orbital natural."""
@@ -1012,10 +898,6 @@ class SolarSimulatorApp:
             # Atualização da transição de escala
             self.scale_manager.update(delta_time)
 
-            # Atualização das animações, lip sync e voz do Guia Virtual 3D
-            if self.guide_active and self.virtual_guide:
-                self.virtual_guide.update(delta_time)
-
             # Rastreamento dinâmico da câmara: acompanha o planeta selecionado em sua órbita elíptica
             if (
                 self.selected_body_id
@@ -1025,13 +907,11 @@ class SolarSimulatorApp:
             ):
                 if not (self.scale_manager and self.scale_manager.is_transitioning):
                     tracked_body = self.solar_system.bodies[self.selected_body_id]
-                    target_spot = glm.vec3(tracked_body.current_position)
-                    delta_move = target_spot - self.camera.target
-                    self.camera.target = glm.vec3(target_spot)
+                    delta_move = tracked_body.current_position - self.camera.target
+                    self.camera.target = glm.vec3(tracked_body.current_position)
                     self.camera.position += delta_move
 
-            # 3. Garantir Viewport de ecrã inteiro e limpeza do framebuffer
-            glViewport(0, 0, self.width, self.height)
+            # 3. Limpeza do framebuffer
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
             # 4. Matrizes de câmara
@@ -1076,6 +956,18 @@ class SolarSimulatorApp:
                 ring_shader=self.ring_shader,
             )
 
+            # 7b. Personagem apresentador do planeta selecionado (characters.json)
+            if self.planet_characters:
+                self.planet_characters.update(delta_time, self.selected_body_id)
+                self.planet_characters.draw(
+                    self.celestial_shader,
+                    view_matrix,
+                    projection_matrix,
+                    self.camera,
+                    self.solar_system.bodies.get(self.selected_body_id or ""),
+                    current_time,
+                )
+
             # 8. Cintura de Asteroides
             if self.show_asteroids:
                 self.asteroid_belt.draw(
@@ -1109,16 +1001,8 @@ class SolarSimulatorApp:
             if self.show_meteors:
                 self.meteor_shower.draw(self.orbit_shader, view_matrix, projection_matrix)
 
-            # 12. Baskerville 3D — Cabeça no canto superior direito a apresentar o planeta
-            if self.guide_active and self.virtual_guide:
-                self.virtual_guide.render(self.width, self.height)
-
-            # 13. Interface 2D — HUD + Painel de Informações + Legendas Pedagógicas
+            # 12. Interface 2D — HUD + Painel de Informações
             if self.ui_manager:
-                from educational.planet_content import get_presenter_for
-                curr_target = self.selected_body_id if self.selected_body_id else ("black_hole" if self.bh_face_to_face else "earth")
-                pres = get_presenter_for(curr_target)
-
                 self.ui_manager.draw(
                     is_paused=self.is_paused,
                     time_scale=self.time_scale_days_per_sec,
@@ -1137,22 +1021,10 @@ class SolarSimulatorApp:
                         "tracking": self.camera_tracking,
                         "camera_mode": self.camera_mode,
                         "black_hole_alert": self.current_black_hole_alert,
-                        "guide_active": self.guide_active,
-                        "guide_info": {
-                            "planet_name": self.solar_system.bodies[self.selected_body_id].name if (self.selected_body_id and self.selected_body_id in self.solar_system.bodies) else (self.bh_face_to_face or "Singularidade"),
-                            "presenter_badge": self.virtual_guide.current_profile.get("badge", pres.get("badge", "🐾 BASKERVILLE")) if self.virtual_guide else pres.get("badge", "🐾 BASKERVILLE"),
-                            "presenter_role": self.virtual_guide.current_profile.get("role", pres.get("role", "Apresentador Cósmico")) if self.virtual_guide else pres.get("role", "Apresentador Cósmico"),
-                            "presenter_name": self.virtual_guide.current_profile.get("name", pres.get("name", "Guia")) if self.virtual_guide else pres.get("name", "Guia"),
-                            "title": self.virtual_guide.controller.lesson_manager.current_section.title if self.virtual_guide else "",
-                            "text": self.virtual_guide.controller.lesson_manager.current_section.speech_text if self.virtual_guide else "",
-                            "is_playing": self.virtual_guide.controller.audio_player.is_playing() if self.virtual_guide else False,
-                            "is_muted": self.is_guide_muted,
-                            "solo_mode": self.solo_exploration_mode,
-                        } if self.guide_active else None,
                     },
                 )
 
-            # 14. Apresentação do frame (Double Buffering)
+            # 13. Apresentação do frame (Double Buffering)
             glfw.swap_buffers(self.window)
             self._update_window_title(delta_time)
 
@@ -1160,8 +1032,8 @@ class SolarSimulatorApp:
 
     def _cleanup(self) -> None:
         """Liberta recursos do OpenGL e encerra o GLFW."""
-        if self.virtual_guide:
-            self.virtual_guide.cleanup()
+        if self.planet_characters:
+            self.planet_characters.cleanup()
         glfw.destroy_window(self.window)
         glfw.terminate()
         print("[Simulador] Aplicação terminada com sucesso.")
