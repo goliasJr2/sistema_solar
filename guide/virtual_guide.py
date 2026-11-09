@@ -71,16 +71,16 @@ class AstronomicalVirtualGuide:
         self.controller.update(delta_time)
 
     def render(self, screen_w: int, screen_h: int) -> None:
-        """Renderiza o personagem 3D no painel lateral direito do ecrã."""
+        """Renderiza a cabeça do Baskerville 3D no canto superior direito do ecrã."""
         if not self._is_visible or self.renderer is None:
             return
 
-        # Posicionamento no canto superior/médio direito, sem tapar o centro da Terra
+        # Posicionamento no canto superior direito, logo abaixo da barra superior (HUD)
         # Em OpenGL, a origem da viewport (0,0) é no canto inferior esquerdo!
-        view_w = int(min(360, screen_w * 0.32))
-        view_h = int(min(420, screen_h * 0.55))
-        view_x = int(screen_w - view_w - 30)
-        view_y = int(screen_h * 0.22) # Meio/alto
+        view_w = 260
+        view_h = 280
+        view_x = int(screen_w - view_w - 20)
+        view_y = int(screen_h - view_h - 55)
 
         self.panel_x = view_x
         self.panel_y = view_y

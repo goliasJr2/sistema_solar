@@ -69,13 +69,13 @@ class GuideRenderer:
         self.shader: Optional[Shader] = None
         self.model: Optional[GLBModel] = None
 
-        # Câmara independente do Guia
-        # Enquadra o busto/cabeça do apresentador cósmico
-        self.camera_target = glm.vec3(0.0, 310.0, 5.0)  # Foco no peito/rosto do Remy
-        self.camera_distance = 145.0                    # Distância focal perfeita
+        # Câmara independente do Baskerville
+        # Enquadra especificamente a cabeça e o rosto do apresentador cósmico
+        self.camera_target = glm.vec3(0.0, 326.0, 3.0)  # Foco na cabeça e olhos do apresentador
+        self.camera_distance = 68.0                     # Close-up perfeito da cabeça
         self.camera_yaw = 0.0                           # Ângulo horizontal frontal
-        self.camera_pitch = 4.0                         # Ligeiro ângulo superior profissional
-        self.fov = 34.0                                 # Lente retrato de 85mm equivalente
+        self.camera_pitch = 2.0                         # Ligeiro ângulo profissional
+        self.fov = 28.0                                 # Lente retrato de alta definição
 
         self._init_gl()
 

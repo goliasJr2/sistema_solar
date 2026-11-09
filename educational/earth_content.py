@@ -26,10 +26,10 @@ EARTH_LESSON_SECTIONS: List[LessonSection] = [
         title="1. Introdução à Terra: O Nosso Oásis Cósmico",
         summary="Apresentação do terceiro planeta a contar do Sol e o único porto de vida conhecido no cosmos.",
         speech_text=(
-            "Olá! Sejam muito bem-vindos ao observatório cósmico. Sou o vosso Guia Virtual de Astronomia "
-            "e hoje vamos explorar em detalhe o nosso planeta-mãe: a Terra. Situada a aproximadamente "
-            "cento e cinquenta milhões de quilómetros do Sol, a Terra é o terceiro planeta do Sistema Solar "
-            "e o único corpo celeste conhecido em todo o Universo que abriga vida. Vista do espaço profundo, "
+            "Ruf! Olá viajante cósmico! Sou o Baskerville, o cão de caça dos Baskerville e o teu guia pelo cosmos. "
+            "Com o meu faro apurado, vamos farejar e explorar em detalhe o nosso planeta-mãe: a Terra! "
+            "Situada a aproximadamente cento e cinquenta milhões de quilómetros do Sol, a Terra é o terceiro planeta "
+            "do Sistema Solar e o único lar com vida conhecido em todo o Universo. Vista do espaço profundo, "
             "assemelha-se a um deslumbrante ponto azul pálido, protegido pela escuridão do vazio estelar."
         ),
         estimated_duration_sec=22.0,

@@ -647,10 +647,14 @@ class SolarSimulatorApp:
             self.camera._update_camera_vectors()
             print(f"[Seleção] Foco → {body.name} (Rastreamento ativo)")
 
+            # Se o Baskerville estiver ativo, atualiza a sua narração para o novo planeta selecionado
+            if self.virtual_guide and self.guide_active:
+                self.virtual_guide.open(body.name)
+                self.virtual_guide.controller.lesson_manager.set_planet(body_id)
+
     def _activate_guide_on_planet(self) -> None:
         """
-        Ativa o Guia Virtual sentado no topo do planeta selecionado.
-        Posiciona a câmara com visão privilegiada e inicia a narração científica.
+        Ativa ou fecha o Baskerville (cabeça no canto superior a apresentar o planeta).
         """
         if not self.selected_body_id or not self.virtual_guide:
             return
@@ -662,30 +666,19 @@ class SolarSimulatorApp:
         planet_name = body.name
         planet_id = self.selected_body_id
 
-        # Enquadra a câmara no topo do planeta
-        planet_pos = body.current_position
-        planet_radius = body.visual_radius
+        # Alternar (toggle): se já estiver a narrar, fechar
+        if self.guide_active:
+            self.virtual_guide.close()
+            self.guide_active = False
+            print(f"[Baskerville] Apresentação de {planet_name.upper()} encerrada.")
+            return
 
-        # Alvo aponta diretamente para o topo do planeta
-        self.camera.target = glm.vec3(planet_pos.x, planet_pos.y + planet_radius * 0.95, planet_pos.z)
-        if planet_id == "sun":
-            self.camera.distance = 45.0
-        else:
-            self.camera.distance = max(6.5, planet_radius * 3.0)
-        self.camera.pitch = 16.0
-        self.camera.yaw = 90.0
-        self.camera._update_camera_vectors()
-        self.camera_tracking = True
-
-        # Oculta o painel lateral para vista limpa
-        if self.ui_manager:
-            self.ui_manager.show_info_panel = False
-
-        # Inicia a apresentação com o personagem sentado
-        self.virtual_guide.open_on_planet(planet_name, planet_id)
+        # Ativa a cabeça 3D do Baskerville no canto superior direito
+        self.virtual_guide.open(planet_name)
+        self.virtual_guide.controller.lesson_manager.set_planet(planet_id)
         self.guide_active = True
 
-        print(f"\n[Guia Virtual 3D] Sentado no topo de {planet_name.upper()} a falar sobre o planeta!")
+        print(f"\n[Baskerville] Cabeça no canto superior a apresentar {planet_name.upper()}!")
 
     def _cycle_planet(self, reverse: bool = False) -> None:
         """Cicla para o próximo planeta ou anterior na ordem orbital natural."""
@@ -1059,22 +1052,9 @@ class SolarSimulatorApp:
             if self.show_meteors:
                 self.meteor_shower.draw(self.orbit_shader, view_matrix, projection_matrix)
 
-            # 12. Guia Virtual 3D — Personagem sentado no topo do planeta selecionado
-            if (
-                self.guide_active
-                and self.virtual_guide
-                and self.selected_body_id
-                and self.selected_body_id in self.solar_system.bodies
-            ):
-                target_body = self.solar_system.bodies[self.selected_body_id]
-                self.virtual_guide.render_on_planet(
-                    view_mat=view_matrix,
-                    proj_mat=projection_matrix,
-                    cam_pos=camera_pos,
-                    planet_pos=target_body.current_position,
-                    planet_radius=target_body.visual_radius,
-                    axial_tilt_deg=target_body.data.get("axial_tilt_deg", 0.0),
-                )
+            # 12. Baskerville 3D — Cabeça no canto superior direito a apresentar o planeta
+            if self.guide_active and self.virtual_guide:
+                self.virtual_guide.render(self.width, self.height)
 
             # 13. Interface 2D — HUD + Painel de Informações + Legendas Pedagógicas
             if self.ui_manager:
@@ -1096,6 +1076,7 @@ class SolarSimulatorApp:
                         "tracking": self.camera_tracking,
                         "camera_mode": self.camera_mode,
                         "black_hole_alert": self.current_black_hole_alert,
+                        "guide_active": self.guide_active,
                         "guide_info": {
                             "planet_name": self.solar_system.bodies[self.selected_body_id].name if (self.selected_body_id and self.selected_body_id in self.solar_system.bodies) else "",
                             "title": self.virtual_guide.controller.lesson_manager.current_section.title if self.virtual_guide else "",

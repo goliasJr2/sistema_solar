@@ -22,11 +22,11 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. O Sol: A Nossa Estrela Mãe",
             summary="O Sol é a estrela central do Sistema Solar e a fonte de quase toda a energia da vida na Terra.",
             speech_text=(
-                "Bem-vindos ao centro do nosso Sistema Solar: o Sol! Esta estrela colossal tem um diâmetro de cerca de "
-                "um milhão e trezentos e noventa mil quilómetros, sendo aproximadamente cento e nove vezes maior do que "
-                "a Terra. Classificada como uma anã amarela do tipo espectral G2V, o Sol contém noventa e nove vírgula "
-                "oito por cento de toda a massa do Sistema Solar. A sua gravidade monumental mantém em órbita os oito "
-                "planetas, os planetas anões, asteroides, cometas e toda a nuvem de Oort."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville! Bem-vindos ao centro do nosso Sistema Solar: o Sol! "
+                "Esta estrela colossal tem um diâmetro de cerca de um milhão e trezentos e noventa mil quilómetros, sendo "
+                "aproximadamente cento e nove vezes maior do que a Terra. Classificada como uma anã amarela do tipo espectral "
+                "G2V, o Sol contém noventa e nove vírgula oito por cento de toda a massa do Sistema Solar. A sua gravidade "
+                "monumental mantém em órbita os oito planetas, os planetas anões, asteroides, cometas e toda a nuvem de Oort."
             ),
             estimated_duration_sec=24.0,
             keywords=["Sol", "Anã Amarela", "G2V", "Massa", "Gravidade"],
@@ -70,12 +70,11 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Mercúrio: O Mensageiro Veloz",
             summary="O menor e mais interior planeta do Sistema Solar, com órbita extremamente excêntrica e rápida.",
             speech_text=(
-                "Mercúrio é o planeta mais próximo do Sol e o menor do Sistema Solar, com apenas quatro mil "
-                "oitocentos e setenta e nove quilómetros de diâmetro, ligeiramente maior do que a Lua da Terra. "
-                "Orbita o Sol a uma distância média de apenas cinquenta e oito milhões de quilómetros, completando "
-                "uma volta em apenas oitenta e oito dias terrestres. A sua superfície é intensamente craterizada, "
-                "recordando a nossa Lua, e está coberta de planícies vulcânicas antigas e escarpas de compressão "
-                "denominadas rupes, formadas quando o planeta arrefeceu e contraiu ao longo de milhares de milhões de anos."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos Mercúrio, o planeta mais veloz e "
+                "próximo do Sol! Com apenas quatro mil oitocentos e setenta e nove quilómetros de diâmetro, é ligeiramente "
+                "maior do que a nossa Lua. Orbita o Sol a cinquenta e oito milhões de quilómetros, completando uma volta "
+                "completa em apenas oitenta e oito dias. A sua superfície rochosa está coberta de crateras ancestrais e escarpas "
+                "gigantescas formadas pelo arrefecimento do seu núcleo metálico."
             ),
             estimated_duration_sec=23.0,
             keywords=["Mercúrio", "Planeta Interior", "Crateras", "Órbita", "Rupes"],
@@ -119,12 +118,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Vénus: O Planeta Gémeo Infernal",
             summary="Vénus é o planeta mais brilhante do céu noturno e o mais quente do Sistema Solar.",
             speech_text=(
-                "Vénus é frequentemente chamado de planeta gémeo da Terra por ter dimensões semelhantes: "
-                "doze mil cento e quatro quilómetros de diâmetro, contra doze mil setecentos e quarenta e dois "
-                "da Terra. No entanto, ali termina a semelhança! Vénus é o planeta mais quente do Sistema Solar, "
-                "com uma temperatura superficial média de quatrocentos e sessenta e cinco graus Celsius, "
-                "suficiente para fundir chumbo. É visível a olho nu como o objeto mais brilhante do céu, "
-                "depois do Sol e da Lua, tendo sido chamado de Estrela da Manhã e Estrela da Tarde."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Farejei Vénus: o planeta mais quente e infernal "
+                "de todo o Sistema Solar! Embora tenha tamanho semelhante à Terra com doze mil cento e quatro quilómetros "
+                "de diâmetro, a sua superfície atinge escaldantes quatrocentos e sessenta e cinco graus Celsius, suficiente "
+                "para derreter chumbo instantaneamente! É o astro mais brilhante do nosso céu noturno logo após a Lua."
             ),
             estimated_duration_sec=23.0,
             keywords=["Vénus", "Planeta Gémeo", "Temperatura", "Mais Quente", "Estrela da Manhã"],
@@ -168,12 +165,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Marte: O Planeta Vermelho",
             summary="Marte é o quarto planeta, com metade do diâmetro da Terra e marcas de imenso vulcanismo e canyons.",
             speech_text=(
-                "Marte, o Planeta Vermelho, é o quarto planeta a contar do Sol e o destino mais explorado da "
-                "humanidade após a Lua. Com um diâmetro de seis mil setecentos e setenta e nove quilómetros — "
-                "cerca de metade do da Terra — apresenta a mais alta montanha do Sistema Solar: o Olympus Mons, "
-                "com vinte e dois quilómetros de altitude. A sua cor avermelhada deve-se ao óxido de ferro, "
-                "literalmente ferrugem, que cobre a sua superfície. Marte possui dois pequenos satélites naturais, "
-                "Fobos e Deimos, provavelmente asteroides capturados."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Farejei rastros no misterioso Planeta Vermelho: Marte! "
+                "Com seis mil setecentos e setenta e nove quilómetros de diâmetro — cerca de metade do tamanho da Terra — "
+                "Marte abriga o colossal vulcão Olympus Mons, a maior montanha do Sistema Solar com vinte e dois quilómetros "
+                "de altitude! A sua coloração avermelhada fascinante vem do óxido de ferro e ferrugem na areia."
             ),
             estimated_duration_sec=23.0,
             keywords=["Marte", "Olympus Mons", "Óxido de Ferro", "Fobos", "Deimos"],
@@ -218,13 +213,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Júpiter: O Rei dos Planetas",
             summary="Júpiter é o maior planeta do Sistema Solar, com massa equivalente a 318 Terras.",
             speech_text=(
-                "Júpiter é o maior planeta do nosso Sistema Solar por uma margem esmagadora. Com um diâmetro "
-                "equatorial de cento e quarenta e dois mil e oitocentos quilómetros — mais de onze vezes o da Terra — "
-                "e uma massa equivalente a trezentas e dezoito Terras, Júpiter é verdadeiramente colossal. "
-                "Na verdade, Júpiter contém mais do dobro da massa de todos os outros planetas combinados. "
-                "O seu campo gravitacional poderoso capturou pelo menos noventa e cinco luas confirmadas, incluindo "
-                "as quatro grandes luas galileanas: Io, Europa, Ganimedes e Calisto, descobertas por Galileu em "
-                "mil seiscentos e dez."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos o verdadeiro Rei dos Planetas: Júpiter! "
+                "Com cento e quarenta e dois mil quilómetros de diâmetro — caberiam mais de mil e trezentas Terras no seu interior! "
+                "Júpiter tem mais do que o dobro da massa de todos os outros planetas juntos e comanda uma colossal corte de "
+                "mais de noventa e cinco luas fascinantes, incluindo as quatro grandes luas galileanas descobertas em 1610!"
             ),
             estimated_duration_sec=24.0,
             keywords=["Júpiter", "Maior Planeta", "Luas Galileanas", "Io", "Europa"],
@@ -268,12 +260,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Saturno: A Joia do Sistema Solar",
             summary="Saturno é famoso pelos seus magníficos anéis e é o único planeta menos denso do que a água.",
             speech_text=(
-                "Saturno é inegavelmente o planeta mais espetacular do Sistema Solar. Com um diâmetro equatorial "
-                "de cento e vinte mil e quinhentos quilómetros e uma massa de noventa e cinco Terras, é o segundo "
-                "maior planeta. Mas o que o torna verdadeiramente único é o seu vasto sistema de anéis, que se "
-                "estende por mais de trezentos mil quilómetros a partir do equador, compostos principalmente de "
-                "gelo de água com partículas entre milímetros e metros. Saturno tem a densidade mais baixa de "
-                "qualquer planeta — tão baixa que flutuaria sobre água!"
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos a mais espetacular joia do cosmos: Saturno! "
+                "Com cento e vinte mil quilómetros de diâmetro e anéis deslumbrantes que se estendem por quase trezentos mil "
+                "quilómetros, feitos de fragmentos puros de gelo e rocha! Sabiam que a densidade média de Saturno é tão baixa "
+                "que se houvesse um oceano gigante no espaço, ele flutuaria como uma bola na água?!"
             ),
             estimated_duration_sec=23.0,
             keywords=["Saturno", "Anéis", "Gelo", "Densidade Baixa", "Espetacular"],
@@ -319,12 +309,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Úrano: O Planeta Deitado",
             summary="Úrano órbita o Sol praticamente de lado, com uma inclinação axial de 97,8 graus.",
             speech_text=(
-                "Úrano é o sétimo planeta do Sistema Solar e um dos mais enigmáticos. Com um diâmetro de "
-                "cinquenta e um mil e oitocentos quilómetros — quatro vezes o da Terra — pertence à família "
-                "dos gigantes de gelo. O que torna Úrano único é a sua inclinação axial extrema de noventa "
-                "e sete vírgula oito graus, o que significa que orbita o Sol praticamente deitado de lado. "
-                "Esta inclinação dramática é provavelmente o resultado de uma colisão colossal com um objeto "
-                "do tamanho da Terra durante a formação do Sistema Solar há cerca de quatro mil milhões de anos."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Apresento-vos o planeta mais excêntrico de todos: Úrano! "
+                "Com cinquenta e um mil quilómetros de diâmetro e manto de gelo cósmico, Úrano roda completamente deitado, com "
+                "uma inclinação inacreditável de quase noventa e oito graus! Uma colisão primordial no passado fê-lo rodar como "
+                "um barril a rolar pelo espaço em torno do Sol!"
             ),
             estimated_duration_sec=23.0,
             keywords=["Úrano", "Inclinação Axial", "Gigante de Gelo", "97.8 Graus", "Colisão Primordial"],
@@ -368,13 +356,10 @@ PLANET_LESSONS: Dict[str, List[LessonSection]] = {
             title="1. Neptuno: O Gigante do Vento",
             summary="Neptuno é o planeta mais distante do Sol, com os ventos mais fortes do Sistema Solar.",
             speech_text=(
-                "Neptuno é o oitavo e mais distante planeta do Sistema Solar, situado a uma distância média "
-                "de trinta unidades astronómicas — trinta vezes a distância Terra-Sol. Com quarenta e nove "
-                "mil e quinhentos quilómetros de diâmetro, é ligeiramente mais pequeno do que Úrano, mas "
-                "tem uma massa dezassete vezes superior à da Terra. Neptuno foi o único planeta cuja "
-                "existência foi prevista matematicamente antes de ser observado: em mil oitocentos e quarenta "
-                "e seis, Le Verrier e Adams previram a sua localização com base nas perturbações orbitais "
-                "de Úrano, confirmando a genialidade das leis de Newton."
+                "Ruf! Sou o Baskerville, o cão de caça dos Baskerville. Chegámos aos confins gelados do sistema: Neptuno! "
+                "Situado a trinta vezes a distância da Terra ao Sol, este gigante azul-cobalto de quarenta e nove mil "
+                "quilómetros de diâmetro foi descoberto pela força pura da matemática! Prepara o casaco porque aqui os ventos "
+                "ultrapassam inacreditáveis dois mil e cem quilómetros por hora!"
             ),
             estimated_duration_sec=24.0,
             keywords=["Neptuno", "Planeta Mais Distante", "Descoberta Matemática", "Le Verrier", "30 UA"],

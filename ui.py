@@ -184,14 +184,16 @@ class UIManager:
 
         # 3. Painel Lateral de Informações (Obrigatório 7)
         if self.show_info_panel and self.selected_body_data:
-            self._draw_planet_info_panel(draw)
+            is_guide_active = bool(active_modules and active_modules.get("guide_active"))
+            self._draw_planet_info_panel(draw, is_guide_active=is_guide_active)
 
         # 4. Ecrã de Ajuda e Créditos (F1)
         if self.show_help:
             self._draw_help_screen(draw)
 
-        # 5. Caixa de Fala do Guia Virtual 3D (Subtítulos / Apresentação)
+        # 5. Baskerville 3D — Moldura no Canto Superior e Caixa de Fala / Apresentação
         if active_modules and active_modules.get("guide_info"):
+            self._draw_baskerville_frame(draw, active_modules["guide_info"])
             self._draw_guide_speech_box(draw, active_modules["guide_info"])
 
         # Envia a imagem composta do Pillow para a textura OpenGL
@@ -382,7 +384,7 @@ class UIManager:
             sub_col = (255, 140, 140) if is_crit else (220, 180, 130)
             draw.text((x0 + 18, y0 + 51), sub_str, fill=sub_col, font=self.font_small)
 
-    def _draw_planet_info_panel(self, draw: ImageDraw.ImageDraw) -> None:
+    def _draw_planet_info_panel(self, draw: ImageDraw.ImageDraw, is_guide_active: bool = False) -> None:
         """Desenha o painel lateral com a ficha técnica astronómica completa do corpo selecionado."""
         data = self.selected_body_data
         if not data:
@@ -428,22 +430,27 @@ class UIManager:
         atmos = str(data.get("atmosphere", "N/A"))
         draw.text((x0 + 20, curr_y + 28), atmos, fill=(120, 220, 180), font=self.font_small)
 
-        # Botão "🔭 Saber Mais" — abre o Guia Virtual 3D sobre o planeta selecionado
-        btn_w, btn_h = 180, 34
+        # Botão "🐾 Saber Mais" — ativa a cabeça do Baskerville no canto superior a apresentar o planeta
+        btn_w, btn_h = 220, 36
         btn_x0 = x0 + (self.panel_width - btn_w) // 2
         btn_y0 = y1 - btn_h - 12
         btn_x1 = btn_x0 + btn_w
         btn_y1 = btn_y0 + btn_h
+
+        btn_fill = (120, 35, 45, 240) if is_guide_active else (20, 75, 125, 240)
+        btn_border = (255, 90, 100, 255) if is_guide_active else (70, 190, 255, 255)
+        btn_text = "✖ Fechar Baskerville" if is_guide_active else "🐾 Saber Mais (Baskerville)"
+
         draw.rounded_rectangle(
             [btn_x0, btn_y0, btn_x1, btn_y1],
             radius=8,
-            fill=(20, 60, 140, 240),
-            outline=(80, 160, 255, 255),
+            fill=btn_fill,
+            outline=btn_border,
             width=2,
         )
         draw.text(
             (btn_x0 + btn_w // 2, btn_y0 + btn_h // 2),
-            "🔭 Saber Mais",
+            btn_text,
             fill=(255, 255, 255),
             font=self.font_text,
             anchor="mm",
@@ -548,6 +555,49 @@ class UIManager:
         draw.text((x0 + 30, cy + 8), "Dados astronómicos reais: NASA Horizons, JPL, ESA, USGS Astrogeology.", fill=(130, 160, 200), font=self.font_small)
         draw.text((x0 + 30, cy + 23), "Prima [F1] para fechar este ecrã de ajuda.", fill=(180, 210, 255), font=self.font_small)
 
+    def _draw_baskerville_frame(self, draw: ImageDraw.ImageDraw, info: dict) -> None:
+        """Desenha a moldura de alta tecnologia no canto superior direito para a cabeça 3D do Baskerville."""
+        # Alinhado exatamente com a viewport 3D OpenGL (260 x 280 px)
+        view_w = 260
+        view_h = 280
+        x0 = self.width - view_w - 20
+        y0 = 55
+        x1 = x0 + view_w
+        y1 = y0 + view_h
+
+        # Contorno exterior elegante estilo sci-fi com cantos arredondados
+        draw.rounded_rectangle(
+            [x0 - 3, y0 - 3, x1 + 3, y1 + 3],
+            radius=12,
+            outline=(80, 190, 255, 255),
+            width=2,
+        )
+
+        # Barra de Cabeçalho Superior da Moldura
+        draw.rounded_rectangle(
+            [x0, y0, x1, y0 + 36],
+            radius=10,
+            fill=(10, 16, 28, 230),
+            outline=(60, 140, 220, 200),
+            width=1,
+        )
+        draw.text((x0 + 12, y0 + 6), "🐾 BASKERVILLE", fill=(255, 215, 80), font=self.font_subtitle)
+        draw.text((x0 + 12, y0 + 22), "Cão de Caça dos Baskerville", fill=(160, 210, 250), font=self.font_small)
+
+        # Barra Inferior de Estado do Baskerville
+        planet_name = info.get("planet_name", "Planeta")
+        draw.rounded_rectangle(
+            [x0, y1 - 26, x1, y1],
+            radius=8,
+            fill=(10, 16, 28, 220),
+            outline=(60, 140, 220, 180),
+            width=1,
+        )
+        is_playing = info.get("is_playing", True)
+        status_dot = "● A narrar..." if is_playing else "❚❚ Pausa"
+        status_color = (80, 240, 140) if is_playing else (255, 200, 70)
+        draw.text((x0 + 10, y1 - 20), f"{status_dot} {planet_name.upper()}", fill=status_color, font=self.font_small)
+
     def _draw_guide_speech_box(self, draw: ImageDraw.ImageDraw, info: dict) -> None:
         """Desenha uma elegante caixa de legendas/diálogo na parte inferior do ecrã."""
         import textwrap
@@ -568,16 +618,15 @@ class UIManager:
             width=2,
         )
 
-        # Cabeçalho do Guia
+        # Cabeçalho do Baskerville
         planet_name = info.get("planet_name", "Planeta")
         title = info.get("title", "Apresentação Cósmica")
-        header_text = f"🎓 GUIA VIRTUAL 3D  |  {planet_name.upper()}  —  {title}"
+        header_text = f"🐾 BASKERVILLE (Cão de Caça dos Baskerville)  |  {planet_name.upper()}  —  {title}"
         draw.text((x0 + 18, y0 + 12), header_text, fill=(255, 215, 80), font=self.font_subtitle)
         draw.line([(x0 + 18, y0 + 34), (x1 - 18, y0 + 34)], fill=(40, 75, 130), width=1)
 
         # Texto falado pelo guia (com quebra de linha suave)
         speech_text = info.get("text", "")
-        # Ajusta comprimento de linha conforme a largura da caixa
         wrap_chars = max(50, int(box_w / 8.5))
         wrapped_lines = textwrap.wrap(speech_text, width=wrap_chars)[:3]
 
@@ -592,5 +641,5 @@ class UIManager:
         status_col = (80, 240, 140) if is_playing else (255, 180, 50)
         draw.text((x0 + 20, y1 - 22), status_str, fill=status_col, font=self.font_small)
 
-        controls_str = "[ENTER] Próxima Seção  |  [X] Fechar Guia  |  [I] Informações"
-        draw.text((x1 - 380, y1 - 22), controls_str, fill=(160, 190, 230), font=self.font_small)
+        controls_str = "[ENTER] Próxima Seção  |  [X] Fechar Baskerville  |  [I] Informações"
+        draw.text((x1 - 420, y1 - 22), controls_str, fill=(160, 190, 230), font=self.font_small)
