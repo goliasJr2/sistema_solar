@@ -99,6 +99,11 @@ class AstronomicalVirtualGuide:
             facial_params=facial_params,
         )
 
+        # CRÍTICO: Restaurar imediatamente o viewport completo da janela
+        # para que o resto da cena (galáxia, estrelas, planetas e UI) continue em ecrã inteiro
+        from OpenGL.GL import glViewport
+        glViewport(0, 0, screen_w, screen_h)
+
     def render_on_planet(
         self,
         view_mat,

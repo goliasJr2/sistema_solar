@@ -17,6 +17,11 @@ ENV/
 *.swp
 *.swo
 
+# Data and cache
+data/
+*.mp3
+*.wav
+
 # OS generated
 Thumbs.db
 Desktop.ini

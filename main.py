@@ -966,15 +966,13 @@ class SolarSimulatorApp:
             ):
                 if not (self.scale_manager and self.scale_manager.is_transitioning):
                     tracked_body = self.solar_system.bodies[self.selected_body_id]
-                    if self.guide_active:
-                        target_spot = tracked_body.current_position + glm.vec3(0.0, tracked_body.visual_radius * 0.95, 0.0)
-                    else:
-                        target_spot = glm.vec3(tracked_body.current_position)
+                    target_spot = glm.vec3(tracked_body.current_position)
                     delta_move = target_spot - self.camera.target
                     self.camera.target = glm.vec3(target_spot)
                     self.camera.position += delta_move
 
-            # 3. Limpeza do framebuffer
+            # 3. Garantir Viewport de ecrã inteiro e limpeza do framebuffer
+            glViewport(0, 0, self.width, self.height)
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
             # 4. Matrizes de câmara
