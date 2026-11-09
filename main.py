@@ -79,6 +79,7 @@ GUIA COMPLETO DE CONTROLOS DE TECLADO:
 
 import sys
 import time
+import random
 from pathlib import Path
 from typing import Optional
 import glm
